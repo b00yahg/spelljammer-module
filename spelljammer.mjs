@@ -10,7 +10,7 @@ import { SpelljammerRolls } from "./module/helpers/rolls.mjs";
 /*  Module Constants                            */
 /* -------------------------------------------- */
 
-export const MODULE_ID = "spelljammer-ship-combat";
+export const MODULE_ID = "spelljammer-module";
 
 export const CREW_ROLES = {
   captain: "Captain",
