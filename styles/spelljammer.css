@@ -1392,6 +1392,90 @@
 }
 
 /* -------------------------------------------- */
+/*  Drop Zones for Crew Assignment              */
+/* -------------------------------------------- */
+
+.drop-zone {
+  transition: all 0.2s ease;
+}
+
+.drop-zone.dragover {
+  border-color: var(--sjc-accent) !important;
+  box-shadow: 0 0 15px rgba(0, 204, 255, 0.4);
+  transform: scale(1.02);
+}
+
+.drop-target {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  border: 2px dashed var(--sjc-border);
+  border-radius: 6px;
+  background: rgba(0, 204, 255, 0.05);
+  color: var(--sjc-text-secondary);
+  text-align: center;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  min-height: 60px;
+}
+
+.drop-target:hover {
+  border-color: var(--sjc-accent);
+  background: rgba(0, 204, 255, 0.1);
+  color: var(--sjc-accent);
+}
+
+.drop-target.small {
+  padding: 0.5rem;
+  min-height: 32px;
+  flex-direction: row;
+}
+
+.drop-target i {
+  font-size: 1.25rem;
+}
+
+.drop-target.small i {
+  font-size: 1rem;
+}
+
+.drop-hint {
+  font-size: 0.75rem;
+  color: var(--sjc-text-secondary);
+  font-weight: normal;
+  margin-left: auto;
+}
+
+.drop-hint i {
+  margin-right: 0.25rem;
+}
+
+/* Assigned crew display improvements */
+.assigned-crew.small {
+  padding: 0.25rem;
+  gap: 0.5rem;
+}
+
+.assigned-crew.small .crew-name {
+  font-size: 0.85rem;
+}
+
+.gunner-slot {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.gunner-slot label {
+  font-size: 0.75rem;
+  color: var(--sjc-text-secondary);
+  font-weight: bold;
+}
+
+/* -------------------------------------------- */
 /*  QoL Improvements                            */
 /* -------------------------------------------- */
 

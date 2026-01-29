@@ -2,60 +2,112 @@
 <section class="crew-assignment-section">
   <h2 class="section-title">
     <i class="fas fa-users"></i> Crew Assignments
+    <span class="drop-hint"><i class="fas fa-hand-pointer"></i> Drag characters here to assign</span>
   </h2>
 
   <div class="crew-roles-grid">
     {{!-- Captain Assignment --}}
-    <div class="role-assignment captain-role">
+    <div class="role-assignment captain-role drop-zone" data-drop-role="captain">
       <div class="role-header">
         <span class="role-badge captain">CAPTAIN</span>
         <span class="role-ability">CHA + Proficiency</span>
       </div>
-      <select data-action="assignCrew" data-role="captain" class="crew-select">
-        <option value="">-- Select Captain --</option>
-        {{#each spelljammer.availableCharacters as |char|}}
-          <option value="{{char.id}}"
-                  {{#if (sjc-eq char.id ../spelljammer.crewAssignments.captain)}}selected{{/if}}>
-            {{char.name}}
-          </option>
-        {{/each}}
-      </select>
+      {{#if spelljammer.resolvedCrew.captain}}
+        <div class="assigned-crew" data-actor-id="{{spelljammer.resolvedCrew.captain.id}}">
+          <img src="{{spelljammer.resolvedCrew.captain.img}}" class="crew-portrait" alt="{{spelljammer.resolvedCrew.captain.name}}">
+          <div class="crew-info">
+            <span class="crew-name">{{spelljammer.resolvedCrew.captain.name}}</span>
+            <span class="crew-stats">CHA {{sjc-formatModifier spelljammer.resolvedCrew.captain.chaMod}} + Prof {{spelljammer.resolvedCrew.captain.proficiency}}</span>
+          </div>
+          <button type="button" class="remove-crew" data-role="captain" title="Remove crew">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      {{else}}
+        <div class="drop-target" data-drop-role="captain">
+          <i class="fas fa-user-plus"></i>
+          <span>Drop character or select below</span>
+        </div>
+        <select data-role="captain" class="crew-select">
+          <option value="">-- Select Captain --</option>
+          {{#each spelljammer.availableCharacters as |char|}}
+            <option value="{{char.id}}"
+                    {{#if (sjc-eq char.id ../spelljammer.crewAssignments.captain)}}selected{{/if}}>
+              {{char.name}}
+            </option>
+          {{/each}}
+        </select>
+      {{/if}}
       <p class="role-desc">Commands the vessel, rolls initiative, issues orders</p>
     </div>
 
     {{!-- Helmsman Assignment --}}
-    <div class="role-assignment helmsman-role">
+    <div class="role-assignment helmsman-role drop-zone" data-drop-role="helmsman">
       <div class="role-header">
         <span class="role-badge helmsman">HELMSMAN</span>
         <span class="role-ability">WIS + Proficiency</span>
       </div>
-      <select data-action="assignCrew" data-role="helmsman" class="crew-select">
-        <option value="">-- Select Helmsman --</option>
-        {{#each spelljammer.availableCharacters as |char|}}
-          <option value="{{char.id}}"
-                  {{#if (sjc-eq char.id ../spelljammer.crewAssignments.helmsman)}}selected{{/if}}>
-            {{char.name}}
-          </option>
-        {{/each}}
-      </select>
+      {{#if spelljammer.resolvedCrew.helmsman}}
+        <div class="assigned-crew" data-actor-id="{{spelljammer.resolvedCrew.helmsman.id}}">
+          <img src="{{spelljammer.resolvedCrew.helmsman.img}}" class="crew-portrait" alt="{{spelljammer.resolvedCrew.helmsman.name}}">
+          <div class="crew-info">
+            <span class="crew-name">{{spelljammer.resolvedCrew.helmsman.name}}</span>
+            <span class="crew-stats">WIS {{sjc-formatModifier spelljammer.resolvedCrew.helmsman.wisMod}} + Prof {{spelljammer.resolvedCrew.helmsman.proficiency}}</span>
+          </div>
+          <button type="button" class="remove-crew" data-role="helmsman" title="Remove crew">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      {{else}}
+        <div class="drop-target" data-drop-role="helmsman">
+          <i class="fas fa-user-plus"></i>
+          <span>Drop character or select below</span>
+        </div>
+        <select data-role="helmsman" class="crew-select">
+          <option value="">-- Select Helmsman --</option>
+          {{#each spelljammer.availableCharacters as |char|}}
+            <option value="{{char.id}}"
+                    {{#if (sjc-eq char.id ../spelljammer.crewAssignments.helmsman)}}selected{{/if}}>
+              {{char.name}}
+            </option>
+          {{/each}}
+        </select>
+      {{/if}}
       <p class="role-desc">Controls movement, acceleration, and evasive maneuvers</p>
     </div>
 
     {{!-- Boatswain Assignment --}}
-    <div class="role-assignment boatswain-role">
+    <div class="role-assignment boatswain-role drop-zone" data-drop-role="boatswain">
       <div class="role-header">
         <span class="role-badge boatswain">BOATSWAIN</span>
         <span class="role-ability">Proficiency = Power Charges</span>
       </div>
-      <select data-action="assignCrew" data-role="boatswain" class="crew-select">
-        <option value="">-- Select Boatswain --</option>
-        {{#each spelljammer.availableCharacters as |char|}}
-          <option value="{{char.id}}"
-                  {{#if (sjc-eq char.id ../spelljammer.crewAssignments.boatswain)}}selected{{/if}}>
-            {{char.name}}
-          </option>
-        {{/each}}
-      </select>
+      {{#if spelljammer.resolvedCrew.boatswain}}
+        <div class="assigned-crew" data-actor-id="{{spelljammer.resolvedCrew.boatswain.id}}">
+          <img src="{{spelljammer.resolvedCrew.boatswain.img}}" class="crew-portrait" alt="{{spelljammer.resolvedCrew.boatswain.name}}">
+          <div class="crew-info">
+            <span class="crew-name">{{spelljammer.resolvedCrew.boatswain.name}}</span>
+            <span class="crew-stats">Prof {{spelljammer.resolvedCrew.boatswain.proficiency}} = {{spelljammer.resolvedCrew.boatswain.proficiency}} Power Charges</span>
+          </div>
+          <button type="button" class="remove-crew" data-role="boatswain" title="Remove crew">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      {{else}}
+        <div class="drop-target" data-drop-role="boatswain">
+          <i class="fas fa-user-plus"></i>
+          <span>Drop character or select below</span>
+        </div>
+        <select data-role="boatswain" class="crew-select">
+          <option value="">-- Select Boatswain --</option>
+          {{#each spelljammer.availableCharacters as |char|}}
+            <option value="{{char.id}}"
+                    {{#if (sjc-eq char.id ../spelljammer.crewAssignments.boatswain)}}selected{{/if}}>
+              {{char.name}}
+            </option>
+          {{/each}}
+        </select>
+      {{/if}}
       <p class="role-desc">Manages power allocation to ship modules</p>
     </div>
 
@@ -66,58 +118,34 @@
         <span class="role-ability">DEX + Proficiency</span>
       </div>
       <div class="gunner-slots">
-        {{!-- Gunner 1 --}}
-        <div class="gunner-slot">
-          <label>Gunner 1:</label>
-          <select data-action="assignCrew" data-role="gunner" data-gunner-index="0" class="crew-select">
-            <option value="">-- Select Gunner --</option>
-            {{#each spelljammer.availableCharacters as |char|}}
-              <option value="{{char.id}}"
-                      {{#if (sjc-eq char.id (lookup ../spelljammer.crewAssignments.gunners 0))}}selected{{/if}}>
-                {{char.name}}
-              </option>
-            {{/each}}
-          </select>
-        </div>
-        {{!-- Gunner 2 --}}
-        <div class="gunner-slot">
-          <label>Gunner 2:</label>
-          <select data-action="assignCrew" data-role="gunner" data-gunner-index="1" class="crew-select">
-            <option value="">-- Select Gunner --</option>
-            {{#each spelljammer.availableCharacters as |char|}}
-              <option value="{{char.id}}"
-                      {{#if (sjc-eq char.id (lookup ../spelljammer.crewAssignments.gunners 1))}}selected{{/if}}>
-                {{char.name}}
-              </option>
-            {{/each}}
-          </select>
-        </div>
-        {{!-- Gunner 3 --}}
-        <div class="gunner-slot">
-          <label>Gunner 3:</label>
-          <select data-action="assignCrew" data-role="gunner" data-gunner-index="2" class="crew-select">
-            <option value="">-- Select Gunner --</option>
-            {{#each spelljammer.availableCharacters as |char|}}
-              <option value="{{char.id}}"
-                      {{#if (sjc-eq char.id (lookup ../spelljammer.crewAssignments.gunners 2))}}selected{{/if}}>
-                {{char.name}}
-              </option>
-            {{/each}}
-          </select>
-        </div>
-        {{!-- Gunner 4 --}}
-        <div class="gunner-slot">
-          <label>Gunner 4:</label>
-          <select data-action="assignCrew" data-role="gunner" data-gunner-index="3" class="crew-select">
-            <option value="">-- Select Gunner --</option>
-            {{#each spelljammer.availableCharacters as |char|}}
-              <option value="{{char.id}}"
-                      {{#if (sjc-eq char.id (lookup ../spelljammer.crewAssignments.gunners 3))}}selected{{/if}}>
-                {{char.name}}
-              </option>
-            {{/each}}
-          </select>
-        </div>
+        {{!-- Gunner slots with drop zones --}}
+        {{#each (array 0 1 2 3) as |idx|}}
+          {{#with (lookup ../spelljammer.resolvedCrew.gunners idx) as |gunner|}}
+            <div class="gunner-slot drop-zone" data-drop-role="gunner" data-gunner-index="{{idx}}">
+              <label>Gunner {{math idx "+" 1}}:</label>
+              <div class="assigned-crew small" data-actor-id="{{gunner.id}}">
+                <img src="{{gunner.img}}" class="crew-portrait small" alt="{{gunner.name}}">
+                <span class="crew-name">{{gunner.name}}</span>
+                <button type="button" class="remove-crew" data-role="gunner" data-gunner-index="{{idx}}" title="Remove">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+          {{else}}
+            <div class="gunner-slot drop-zone" data-drop-role="gunner" data-gunner-index="{{idx}}">
+              <label>Gunner {{math idx "+" 1}}:</label>
+              <div class="drop-target small" data-drop-role="gunner" data-gunner-index="{{idx}}">
+                <i class="fas fa-user-plus"></i>
+              </div>
+              <select data-role="gunner" data-gunner-index="{{idx}}" class="crew-select">
+                <option value="">-- Select --</option>
+                {{#each ../spelljammer.availableCharacters as |char|}}
+                  <option value="{{char.id}}">{{char.name}}</option>
+                {{/each}}
+              </select>
+            </div>
+          {{/with}}
+        {{/each}}
       </div>
       <p class="role-desc">Operate ship weapons, assign to specific weapon systems</p>
     </div>

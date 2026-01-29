@@ -115,6 +115,28 @@ export const OCEAN_COURT_EXPRESS = {
     traits: {
       size: "huge",
       dimensions: "60 ft. × 20 ft."
+    },
+    details: {
+      source: "Spelljammer Ship Combat Module",
+      description: {
+        value: `<h2>Ocean Court Express</h2>
+<p><strong>Class:</strong> Frigate (2×2)</p>
+<p><strong>Crew:</strong> 5-15 (minimum 5 required)</p>
+<h3>Ship Statistics</h3>
+<ul>
+<li><strong>Armor Class:</strong> 16</li>
+<li><strong>Hull Points:</strong> 100</li>
+<li><strong>Max Acceleration:</strong> 200 ft/round</li>
+<li><strong>Max Deceleration:</strong> 200 ft/round</li>
+</ul>
+<h3>Armament</h3>
+<ul>
+<li><strong>2× Flower Cannons</strong> - 3d10 radiant, 300/900 ft., 90° firing arc (port/starboard)</li>
+<li><strong>1× Carronade</strong> - 8d10 bludgeoning, 500/1500 ft., 45° firing arc (bow), Utilize property</li>
+</ul>
+<h3>Power Modules</h3>
+<p>All standard power modules installed: Weapons Array, Deflector Grid, Thruster Override, Hull Reinforcement, System Restoration, and Warp Core Charge.</p>`
+      }
     }
   },
   flags: {
@@ -130,7 +152,7 @@ export const OCEAN_COURT_EXPRESS = {
       crewAssignments: {
         captain: null,
         helmsman: null,
-        gunners: [],
+        gunners: [null, null],
         boatswain: null
       },
       crewRequirements: {
@@ -173,9 +195,9 @@ export const OCEAN_COURT_EXPRESS = {
         },
         {
           name: "Carronade (Bow)",
-          damage: "4d10",
+          damage: "8d10",
           damageType: "bludgeoning",
-          range: "200/600",
+          range: "500/1500",
           position: "bow",
           firingArc: 45,
           properties: ["Utilize"],
@@ -642,6 +664,12 @@ Hooks.once("init", () => {
 
   Handlebars.registerHelper("gt", function(a, b) {
     return parseFloat(a) > parseFloat(b);
+  });
+
+  // Array helper to create arrays in templates
+  Handlebars.registerHelper("array", function(...args) {
+    // Remove the Handlebars options object from the end
+    return args.slice(0, -1);
   });
 });
 

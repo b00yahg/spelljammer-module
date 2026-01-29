@@ -26,7 +26,8 @@ export class SpelljammerShipSheet extends ActorSheet {
       height: 800,
       tabs: [{ navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "bridge" }],
       scrollY: [".sheet-body"],
-      resizable: true
+      resizable: true,
+      dragDrop: [{ dragSelector: ".item-list .item", dropSelector: null }]
     });
   }
 
@@ -303,6 +304,18 @@ export class SpelljammerShipSheet extends ActorSheet {
     // General
     html.find('[data-action="rollCollisionDamage"]').click(this._onRollCollisionDamage.bind(this));
     html.find('.assigned-crew').click(this._onOpenCharacterSheet.bind(this));
+
+    // Drag-drop visual feedback
+    html.find('.drop-zone, .drop-target').on('dragover', (event) => {
+      event.preventDefault();
+      event.currentTarget.classList.add('dragover');
+    });
+    html.find('.drop-zone, .drop-target').on('dragleave', (event) => {
+      event.currentTarget.classList.remove('dragover');
+    });
+    html.find('.drop-zone, .drop-target').on('drop', (event) => {
+      event.currentTarget.classList.remove('dragover');
+    });
   }
 
   /* -------------------------------------------- */
@@ -661,6 +674,185 @@ export class SpelljammerShipSheet extends ActorSheet {
     if (actor) {
       actor.sheet.render(true);
     }
+  }
+
+  /* -------------------------------------------- */
+  /*  Drag and Drop                               */
+  /* -------------------------------------------- */
+
+  /** @override */
+  _canDragDrop(selector) {
+    return this.isEditable;
+  }
+
+  /** @override */
+  async _onDrop(event) {
+    event.preventDefault();
+
+    // Try to extract the data
+    let data;
+    try {
+      data = JSON.parse(event.dataTransfer?.getData("text/plain"));
+    } catch (err) {
+      return false;
+    }
+
+    // Handle dropping an Actor (for crew assignment)
+    if (data.type === "Actor") {
+      return this._onDropActor(event, data);
+    }
+
+    // Handle dropping an Item (for weapons)
+    if (data.type === "Item") {
+      return this._onDropItem(event, data);
+    }
+
+    return false;
+  }
+
+  /**
+   * Handle dropping an Actor onto the sheet for crew assignment
+   */
+  async _onDropActor(event, data) {
+    // Get the dropped actor
+    const actor = await Actor.implementation.fromDropData(data);
+    if (!actor) return false;
+
+    // Only allow character actors
+    if (actor.type !== "character") {
+      ui.notifications.warn("Only character actors can be assigned as crew!");
+      return false;
+    }
+
+    // Find which drop zone we're in
+    const dropTarget = event.target.closest("[data-drop-role]");
+    if (dropTarget) {
+      const role = dropTarget.dataset.dropRole;
+      const gunnerIndex = dropTarget.dataset.gunnerIndex;
+      return this._assignCrewMember(actor, role, gunnerIndex);
+    }
+
+    // If no specific drop zone, show a dialog to choose role
+    const roleChoice = await this._showRoleSelectionDialog(actor);
+    if (roleChoice) {
+      return this._assignCrewMember(actor, roleChoice.role, roleChoice.gunnerIndex);
+    }
+
+    return false;
+  }
+
+  /**
+   * Handle dropping an Item onto the sheet (for weapons)
+   */
+  async _onDropItem(event, data) {
+    const item = await Item.implementation.fromDropData(data);
+    if (!item) return false;
+
+    // Check if it's a weapon-type item
+    if (item.type === "weapon") {
+      // Create a new ship weapon based on the item
+      const weapons = foundry.utils.deepClone(this.spelljammerData.weapons ?? []);
+      weapons.push({
+        name: item.name,
+        damage: item.system.damage?.parts?.[0]?.[0] ?? "2d10",
+        damageType: item.system.damage?.parts?.[0]?.[1] ?? "bludgeoning",
+        range: `${item.system.range?.value ?? 300}/${item.system.range?.long ?? 900}`,
+        position: "broadside",
+        firingArc: 90,
+        properties: [],
+        hp: 10,
+        maxHp: 10,
+        assignedGunner: null
+      });
+
+      await this.actor.update({
+        [`flags.${MODULE_ID}.weapons`]: weapons
+      });
+
+      ui.notifications.info(`Added ${item.name} as a ship weapon!`);
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Assign a crew member to a role
+   */
+  async _assignCrewMember(actor, role, gunnerIndex = null) {
+    const assignments = foundry.utils.deepClone(this.spelljammerData.crewAssignments ?? {});
+
+    if (role === "gunner") {
+      const idx = parseInt(gunnerIndex ?? 0);
+      if (!Array.isArray(assignments.gunners)) assignments.gunners = [];
+      while (assignments.gunners.length <= idx) {
+        assignments.gunners.push(null);
+      }
+      assignments.gunners[idx] = actor.id;
+    } else {
+      assignments[role] = actor.id;
+    }
+
+    await this.actor.update({
+      [`flags.${MODULE_ID}.crewAssignments`]: assignments
+    });
+
+    ui.notifications.info(`${actor.name} assigned as ${role.charAt(0).toUpperCase() + role.slice(1)}!`);
+
+    game.socket.emit(`module.${MODULE_ID}`, {
+      type: "refreshSheet",
+      actorId: this.actor.id
+    });
+
+    return true;
+  }
+
+  /**
+   * Show a dialog to select which role to assign
+   */
+  async _showRoleSelectionDialog(actor) {
+    return new Promise((resolve) => {
+      new Dialog({
+        title: `Assign ${actor.name} to Crew Role`,
+        content: `
+          <p>Select a role for <strong>${actor.name}</strong>:</p>
+          <form>
+            <div class="form-group">
+              <label>Role:</label>
+              <select name="role" style="width: 100%;">
+                <option value="captain">Captain</option>
+                <option value="helmsman">Helmsman</option>
+                <option value="boatswain">Boatswain</option>
+                <option value="gunner-0">Gunner 1</option>
+                <option value="gunner-1">Gunner 2</option>
+                <option value="gunner-2">Gunner 3</option>
+                <option value="gunner-3">Gunner 4</option>
+              </select>
+            </div>
+          </form>
+        `,
+        buttons: {
+          assign: {
+            icon: '<i class="fas fa-check"></i>',
+            label: "Assign",
+            callback: (html) => {
+              const roleValue = html.find('[name="role"]').val();
+              if (roleValue.startsWith("gunner-")) {
+                resolve({ role: "gunner", gunnerIndex: roleValue.split("-")[1] });
+              } else {
+                resolve({ role: roleValue, gunnerIndex: null });
+              }
+            }
+          },
+          cancel: {
+            icon: '<i class="fas fa-times"></i>',
+            label: "Cancel",
+            callback: () => resolve(null)
+          }
+        },
+        default: "assign"
+      }).render(true);
+    });
   }
 
   /* -------------------------------------------- */
