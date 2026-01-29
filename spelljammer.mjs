@@ -235,6 +235,37 @@ Hooks.once("init", () => {
   Handlebars.registerHelper("sjc-multiply", function(a, b) {
     return (parseFloat(a) || 0) * (parseFloat(b) || 0);
   });
+
+  // Math helper for arithmetic operations
+  Handlebars.registerHelper("math", function(a, operator, b) {
+    a = parseFloat(a) || 0;
+    b = parseFloat(b) || 0;
+    switch (operator) {
+      case "+": return a + b;
+      case "-": return a - b;
+      case "*": return a * b;
+      case "/": return b !== 0 ? a / b : 0;
+      case "%": return a % b;
+      default: return a;
+    }
+  });
+
+  // Comparison helpers
+  Handlebars.registerHelper("lte", function(a, b) {
+    return parseFloat(a) <= parseFloat(b);
+  });
+
+  Handlebars.registerHelper("gte", function(a, b) {
+    return parseFloat(a) >= parseFloat(b);
+  });
+
+  Handlebars.registerHelper("lt", function(a, b) {
+    return parseFloat(a) < parseFloat(b);
+  });
+
+  Handlebars.registerHelper("gt", function(a, b) {
+    return parseFloat(a) > parseFloat(b);
+  });
 });
 
 /* -------------------------------------------- */
