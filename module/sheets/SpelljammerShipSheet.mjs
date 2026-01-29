@@ -413,9 +413,9 @@ export class SpelljammerShipSheet extends ActorSheet {
     // Everything below here is only needed if the sheet is editable
     if (!this.isEditable) return;
 
-    // Crew assignment
-    html.find('.crew-select').change(this._onAssignCrew.bind(this));
-    html.find('.remove-crew').click(this._onRemoveCrew.bind(this));
+    // Crew assignment - Use event delegation for better reliability
+    html.on('change', '.crew-select', this._onAssignCrew.bind(this));
+    html.on('click', '.remove-crew', this._onRemoveCrew.bind(this));
 
     // Power modules
     html.find('.power-module').click(this._onToggleModule.bind(this));
@@ -465,11 +465,18 @@ export class SpelljammerShipSheet extends ActorSheet {
 
   async _onAssignCrew(event) {
     event.preventDefault();
+    event.stopPropagation();
+
     const element = event.currentTarget;
     const role = element.dataset.role;
     const characterId = element.value;
 
-    if (!role) return;
+    console.log(`Spelljammer | Crew assignment: role=${role}, characterId=${characterId}`);
+
+    if (!role) {
+      console.warn("Spelljammer | No role found on crew select element");
+      return;
+    }
 
     const assignments = foundry.utils.deepClone(this.spelljammerData.crewAssignments ?? {});
 
@@ -481,6 +488,12 @@ export class SpelljammerShipSheet extends ActorSheet {
       assignments.gunners.push(null);
     }
 
+    let assignedName = "Unassigned";
+    if (characterId) {
+      const actor = game.actors.get(characterId);
+      if (actor) assignedName = actor.name;
+    }
+
     if (role === "gunner") {
       const gunnerIndex = parseInt(element.dataset.gunnerIndex ?? 0);
       assignments.gunners[gunnerIndex] = characterId || null;
@@ -488,18 +501,32 @@ export class SpelljammerShipSheet extends ActorSheet {
       assignments[role] = characterId || null;
     }
 
-    await this.actor.update({
-      [`flags.${MODULE_ID}.crewAssignments`]: assignments
-    });
+    try {
+      await this.actor.update({
+        [`flags.${MODULE_ID}.crewAssignments`]: assignments
+      });
 
-    // Notify other clients
-    game.socket.emit(`module.${MODULE_ID}`, {
-      type: "refreshSheet",
-      actorId: this.actor.id
-    });
+      console.log(`Spelljammer | Crew assignment updated successfully`);
 
-    // Force re-render
-    this.render(false);
+      // Show notification
+      if (characterId) {
+        ui.notifications.info(`${assignedName} assigned as ${role.charAt(0).toUpperCase() + role.slice(1)}!`);
+      } else {
+        ui.notifications.info(`${role.charAt(0).toUpperCase() + role.slice(1)} role cleared.`);
+      }
+
+      // Notify other clients
+      game.socket.emit(`module.${MODULE_ID}`, {
+        type: "refreshSheet",
+        actorId: this.actor.id
+      });
+
+      // Force re-render
+      this.render(false);
+    } catch (err) {
+      console.error("Spelljammer | Error updating crew assignment:", err);
+      ui.notifications.error("Failed to assign crew member!");
+    }
   }
 
   async _onRemoveCrew(event) {
@@ -805,7 +832,7 @@ export class SpelljammerShipSheet extends ActorSheet {
       const damageContent = `<div class="spelljammer-chat weapon-damage">
         <p><strong>Damage:</strong> ${damageFormula} ${damageType}</p>
         ${hasWeaponsArrayBonus ? '<p class="bonus-note"><i class="fas fa-bolt"></i> Weapons Array: +1d6 damage</p>' : ''}
-        <button class="spelljammer-damage-roll" data-formula="${damageFormula}" data-type="${damageType}">
+        <button class="spelljammer-damage-roll" data-formula="${damageFormula}" data-type="${damageType}" data-weapon="${item.name}">
           <i class="fas fa-dice-d20"></i> Roll Damage
         </button>
       </div>`;
