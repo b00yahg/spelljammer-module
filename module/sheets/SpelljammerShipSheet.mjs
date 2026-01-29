@@ -67,11 +67,18 @@ export class SpelljammerShipSheet extends ActorSheet {
     // Ensure default power modules exist as Items
     await addDefaultPowerModules(this.actor);
 
-    const sjData = this.spelljammerData;
+    // Get fresh flag data directly from actor
+    const sjData = this.actor.getFlag(MODULE_ID, "") ?? getDefaultSpelljammerData();
+
+    console.log("Spelljammer | getData - crewAssignments:", sjData.crewAssignments);
 
     // Get Items-based weapons and modules
     const shipWeapons = getShipWeapons(this.actor);
     const powerModuleItems = getPowerModules(this.actor);
+
+    // Resolve crew assignments
+    const resolvedCrew = await this._resolveCrewAssignments(sjData.crewAssignments);
+    console.log("Spelljammer | getData - resolvedCrew:", resolvedCrew);
 
     // Add spelljammer-specific context
     context.spelljammer = {
@@ -87,7 +94,7 @@ export class SpelljammerShipSheet extends ActorSheet {
       // Legacy support - Power module state with definitions (for templates)
       powerModulesWithDefs: this._getPowerModulesFromItems(powerModuleItems),
       // Crew assignments resolved to actors
-      resolvedCrew: await this._resolveCrewAssignments(sjData.crewAssignments),
+      resolvedCrew: resolvedCrew,
       // Available characters for assignment
       availableCharacters: this._getAvailableCharacters(),
       // Total power charges used (from Items)
@@ -478,7 +485,8 @@ export class SpelljammerShipSheet extends ActorSheet {
       return;
     }
 
-    const assignments = foundry.utils.deepClone(this.spelljammerData.crewAssignments ?? {});
+    // Get fresh flag data directly
+    const assignments = foundry.utils.deepClone(this.actor.getFlag(MODULE_ID, "crewAssignments") ?? {});
 
     // Ensure gunners array exists with proper length
     if (!Array.isArray(assignments.gunners)) {
@@ -502,11 +510,12 @@ export class SpelljammerShipSheet extends ActorSheet {
     }
 
     try {
-      await this.actor.update({
-        [`flags.${MODULE_ID}.crewAssignments`]: assignments
-      });
+      // Use setFlag directly for more reliable flag updates
+      await this.actor.setFlag(MODULE_ID, "crewAssignments", assignments);
 
-      console.log(`Spelljammer | Crew assignment updated successfully`);
+      // Verify the update
+      const updatedAssignments = this.actor.getFlag(MODULE_ID, "crewAssignments");
+      console.log(`Spelljammer | Crew assignment updated. New assignments:`, updatedAssignments);
 
       // Show notification
       if (characterId) {
@@ -521,8 +530,8 @@ export class SpelljammerShipSheet extends ActorSheet {
         actorId: this.actor.id
       });
 
-      // Force re-render
-      this.render(false);
+      // Force a full re-render
+      this.render(true);
     } catch (err) {
       console.error("Spelljammer | Error updating crew assignment:", err);
       ui.notifications.error("Failed to assign crew member!");
@@ -536,7 +545,8 @@ export class SpelljammerShipSheet extends ActorSheet {
     const role = element.dataset.role;
     if (!role) return;
 
-    const assignments = foundry.utils.deepClone(this.spelljammerData.crewAssignments ?? {});
+    // Get fresh flag data
+    const assignments = foundry.utils.deepClone(this.actor.getFlag(MODULE_ID, "crewAssignments") ?? {});
 
     // Ensure gunners array exists
     if (!Array.isArray(assignments.gunners)) {
@@ -550,9 +560,8 @@ export class SpelljammerShipSheet extends ActorSheet {
       assignments[role] = null;
     }
 
-    await this.actor.update({
-      [`flags.${MODULE_ID}.crewAssignments`]: assignments
-    });
+    // Use setFlag directly
+    await this.actor.setFlag(MODULE_ID, "crewAssignments", assignments);
 
     // Notify other clients
     game.socket.emit(`module.${MODULE_ID}`, {
@@ -560,8 +569,8 @@ export class SpelljammerShipSheet extends ActorSheet {
       actorId: this.actor.id
     });
 
-    // Force re-render
-    this.render(false);
+    // Force full re-render
+    this.render(true);
   }
 
   /* -------------------------------------------- */
@@ -1122,7 +1131,8 @@ export class SpelljammerShipSheet extends ActorSheet {
    * Assign a crew member to a role
    */
   async _assignCrewMember(actor, role, gunnerIndex = null) {
-    const assignments = foundry.utils.deepClone(this.spelljammerData.crewAssignments ?? {});
+    // Get fresh flag data directly
+    const assignments = foundry.utils.deepClone(this.actor.getFlag(MODULE_ID, "crewAssignments") ?? {});
 
     // Ensure gunners array exists with proper length
     if (!Array.isArray(assignments.gunners)) {
@@ -1139,9 +1149,8 @@ export class SpelljammerShipSheet extends ActorSheet {
       assignments[role] = actor.id;
     }
 
-    await this.actor.update({
-      [`flags.${MODULE_ID}.crewAssignments`]: assignments
-    });
+    // Use setFlag directly for reliable update
+    await this.actor.setFlag(MODULE_ID, "crewAssignments", assignments);
 
     ui.notifications.info(`${actor.name} assigned as ${role.charAt(0).toUpperCase() + role.slice(1)}!`);
 
@@ -1151,8 +1160,8 @@ export class SpelljammerShipSheet extends ActorSheet {
       actorId: this.actor.id
     });
 
-    // Force re-render this sheet
-    this.render(false);
+    // Force full re-render
+    this.render(true);
 
     return true;
   }
