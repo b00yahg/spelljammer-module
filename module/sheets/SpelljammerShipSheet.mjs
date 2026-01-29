@@ -526,12 +526,16 @@ export class SpelljammerShipSheet extends ActorSheet {
     }
 
     try {
-      // Use setFlag directly for more reliable flag updates
-      await this.actor.setFlag(MODULE_ID, "crewAssignments", assignments);
+      // Get the full current spelljammer data and merge in new assignments
+      const currentData = this.actor.getFlag(MODULE_ID, "") ?? {};
+      const updatedData = foundry.utils.mergeObject(currentData, { crewAssignments: assignments });
 
-      // Verify the update
-      const updatedAssignments = this.actor.getFlag(MODULE_ID, "crewAssignments");
-      console.log(`Spelljammer | Crew assignment updated. New assignments:`, updatedAssignments);
+      // Use a single atomic update for the entire flag namespace
+      await this.actor.update({
+        [`flags.${MODULE_ID}`]: updatedData
+      });
+
+      console.log(`Spelljammer | Crew assignment updated. New assignments:`, assignments);
 
       // Show notification
       if (characterId) {
@@ -546,8 +550,7 @@ export class SpelljammerShipSheet extends ActorSheet {
         actorId: this.actor.id
       });
 
-      // Force a full re-render
-      this.render(true);
+      // Foundry automatically re-renders after actor.update(), no need to call render()
     } catch (err) {
       console.error("Spelljammer | Error updating crew assignment:", err);
       ui.notifications.error("Failed to assign crew member!");
@@ -576,8 +579,14 @@ export class SpelljammerShipSheet extends ActorSheet {
       assignments[role] = null;
     }
 
-    // Use setFlag directly
-    await this.actor.setFlag(MODULE_ID, "crewAssignments", assignments);
+    // Get the full current spelljammer data and merge in new assignments
+    const currentData = this.actor.getFlag(MODULE_ID, "") ?? {};
+    const updatedData = foundry.utils.mergeObject(currentData, { crewAssignments: assignments });
+
+    // Use a single atomic update
+    await this.actor.update({
+      [`flags.${MODULE_ID}`]: updatedData
+    });
 
     // Notify other clients
     game.socket.emit(`module.${MODULE_ID}`, {
@@ -585,8 +594,7 @@ export class SpelljammerShipSheet extends ActorSheet {
       actorId: this.actor.id
     });
 
-    // Force full re-render
-    this.render(true);
+    // Foundry automatically re-renders after actor.update()
   }
 
   /* -------------------------------------------- */
@@ -1167,8 +1175,14 @@ export class SpelljammerShipSheet extends ActorSheet {
       assignments[role] = actor.id;
     }
 
-    // Use setFlag directly for reliable update
-    await this.actor.setFlag(MODULE_ID, "crewAssignments", assignments);
+    // Get the full current spelljammer data and merge in new assignments
+    const currentData = this.actor.getFlag(MODULE_ID, "") ?? {};
+    const updatedData = foundry.utils.mergeObject(currentData, { crewAssignments: assignments });
+
+    // Use a single atomic update
+    await this.actor.update({
+      [`flags.${MODULE_ID}`]: updatedData
+    });
 
     ui.notifications.info(`${actor.name} assigned as ${role.charAt(0).toUpperCase() + role.slice(1)}!`);
 
@@ -1178,8 +1192,7 @@ export class SpelljammerShipSheet extends ActorSheet {
       actorId: this.actor.id
     });
 
-    // Force full re-render
-    this.render(true);
+    // Foundry automatically re-renders after actor.update()
 
     return true;
   }
