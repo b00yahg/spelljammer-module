@@ -742,18 +742,19 @@ export function getDefaultSpelljammerData() {
 
 /**
  * Ensure a vehicle actor has spelljammer flags initialized
+ * Uses setFlag for each key to avoid overwriting existing data
  */
 export async function initializeSpelljammerData(actor) {
-  const existingData = actor.getFlag(MODULE_ID, "initialized");
-  if (existingData) return;
-
   const defaults = getDefaultSpelljammerData();
-  await actor.update({
-    [`flags.${MODULE_ID}`]: {
-      ...defaults,
-      initialized: true
+
+  // Set each default value only if it doesn't exist
+  // This prevents overwriting crew assignments or other data
+  for (const [key, value] of Object.entries(defaults)) {
+    const existingValue = actor.getFlag(MODULE_ID, key);
+    if (existingValue === undefined) {
+      await actor.setFlag(MODULE_ID, key, value);
     }
-  });
+  }
 }
 
 /* -------------------------------------------- */
