@@ -413,6 +413,21 @@ export class SpelljammerShipSheet extends ActorSheet {
   /*  Event Listeners                             */
   /* -------------------------------------------- */
 
+  /**
+   * Override Foundry's _onChangeInput to prevent form submission for our custom elements
+   * @override
+   */
+  _onChangeInput(event) {
+    // Skip form submission for our custom select elements
+    const element = event.target;
+    if (element.classList.contains('crew-select') || element.classList.contains('gunner-select')) {
+      // Don't call super - we handle these ourselves
+      return;
+    }
+    // For all other elements, use default behavior
+    super._onChangeInput(event);
+  }
+
   /** @override */
   activateListeners(html) {
     super.activateListeners(html);
@@ -473,6 +488,7 @@ export class SpelljammerShipSheet extends ActorSheet {
   async _onAssignCrew(event) {
     event.preventDefault();
     event.stopPropagation();
+    event.stopImmediatePropagation(); // Prevent Foundry's _onChangeInput from triggering
 
     const element = event.currentTarget;
     const role = element.dataset.role;
@@ -861,6 +877,8 @@ export class SpelljammerShipSheet extends ActorSheet {
 
   async _onAssignWeaponGunner(event) {
     event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation(); // Prevent Foundry's _onChangeInput
     const element = event.currentTarget;
     const itemId = element.dataset.itemId;
     const gunnerIndex = element.value === "" ? null : parseInt(element.value);
