@@ -45,6 +45,29 @@
 .spelljammer-ship .window-content {
   background: linear-gradient(135deg, var(--sjc-bg-primary) 0%, var(--sjc-bg-secondary) 100%);
   padding: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--sjc-accent) var(--sjc-bg-primary);
+}
+
+/* Custom Scrollbar for WebKit browsers */
+.spelljammer-ship .window-content::-webkit-scrollbar {
+  width: 10px;
+}
+
+.spelljammer-ship .window-content::-webkit-scrollbar-track {
+  background: var(--sjc-bg-primary);
+  border-radius: 5px;
+}
+
+.spelljammer-ship .window-content::-webkit-scrollbar-thumb {
+  background: var(--sjc-accent);
+  border-radius: 5px;
+  border: 2px solid var(--sjc-bg-primary);
+}
+
+.spelljammer-ship .window-content::-webkit-scrollbar-thumb:hover {
+  background: var(--sjc-helmsman-light);
 }
 
 .spelljammer-sheet {
@@ -53,6 +76,13 @@
   gap: 1rem;
   padding: 1rem;
   color: var(--sjc-text-primary);
+  min-height: min-content;
+}
+
+/* Make stations scrollable individually if needed */
+.station {
+  max-height: none;
+  overflow: visible;
 }
 
 /* -------------------------------------------- */
@@ -1359,4 +1389,224 @@
   pointer-events: none;
   z-index: 9999;
   opacity: 0.15;
+}
+
+/* -------------------------------------------- */
+/*  QoL Improvements                            */
+/* -------------------------------------------- */
+
+/* Smooth scrolling */
+.spelljammer-ship .window-content {
+  scroll-behavior: smooth;
+}
+
+/* Better input focus states */
+.spelljammer-sheet input:focus,
+.spelljammer-sheet select:focus,
+.spelljammer-sheet textarea:focus {
+  outline: none;
+  border-color: var(--sjc-accent);
+  box-shadow: 0 0 0 2px rgba(0, 204, 255, 0.2);
+}
+
+/* Sticky header for better navigation */
+.spelljammer-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: blur(8px);
+  background: rgba(15, 15, 35, 0.95);
+}
+
+/* Collapsible station sections */
+.station-header {
+  cursor: pointer;
+  user-select: none;
+}
+
+.station-header .collapse-icon {
+  margin-left: auto;
+  transition: transform 0.3s;
+}
+
+.station.collapsed .collapse-icon {
+  transform: rotate(-90deg);
+}
+
+.station.collapsed .station-content {
+  display: none;
+}
+
+/* Better button feedback */
+.roll-button:active,
+.action-button:active,
+.add-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 6px rgba(0, 204, 255, 0.2);
+}
+
+/* Tooltip styling for buttons */
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--sjc-bg-primary);
+  border: 1px solid var(--sjc-border);
+  color: var(--sjc-text-primary);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  z-index: 100;
+  margin-bottom: 4px;
+}
+
+/* Loading spinner for async operations */
+.loading-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--sjc-border);
+  border-top-color: var(--sjc-accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Improved transitions for interactive elements */
+.station,
+.power-module,
+.command-option,
+.weapon-row,
+.assigned-crew {
+  transition: all 0.2s ease;
+}
+
+/* Better visual feedback for disabled states */
+.spelljammer-sheet [disabled],
+.spelljammer-sheet .disabled {
+  pointer-events: none;
+  filter: grayscale(50%);
+}
+
+/* Status indicators for velocity/direction on sheet */
+.velocity-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: var(--sjc-bg-secondary);
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.velocity-indicator.moving {
+  color: var(--sjc-success);
+}
+
+.velocity-indicator.stationary {
+  color: var(--sjc-text-secondary);
+}
+
+.direction-indicator {
+  font-size: 1.2em;
+}
+
+/* Highlight for active power modules */
+.power-module.active::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, var(--sjc-boatswain), var(--sjc-boatswain-light));
+  border-radius: 8px;
+  z-index: -1;
+  opacity: 0.3;
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from { opacity: 0.2; }
+  to { opacity: 0.4; }
+}
+
+/* HP bar visualization */
+.hp-bar {
+  height: 6px;
+  background: var(--sjc-bg-primary);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 0.25rem;
+}
+
+.hp-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--sjc-danger), var(--sjc-warning), var(--sjc-success));
+  background-size: 200% 100%;
+  transition: width 0.3s, background-position 0.3s;
+}
+
+.hp-bar-fill.critical {
+  background-position: 0% 50%;
+}
+
+.hp-bar-fill.hurt {
+  background-position: 50% 50%;
+}
+
+.hp-bar-fill.healthy {
+  background-position: 100% 50%;
+}
+
+/* Keyboard navigation hints */
+.keyboard-hint {
+  font-size: 0.65rem;
+  background: var(--sjc-bg-primary);
+  border: 1px solid var(--sjc-border);
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  color: var(--sjc-text-secondary);
+  margin-left: 0.5rem;
+}
+
+/* Print/export friendly styles */
+@media print {
+  .spelljammer-sheet {
+    background: white;
+    color: black;
+  }
+
+  .roll-button,
+  .action-button,
+  .remove-crew,
+  .delete-button {
+    display: none;
+  }
+}
+
+/* Responsive font sizes for smaller windows */
+@media (max-width: 600px) {
+  .spelljammer-sheet {
+    font-size: 0.9rem;
+  }
+
+  .station-title {
+    font-size: 1rem;
+  }
+
+  .spelljammer-header .ship-name input {
+    width: 200px;
+    font-size: 1.2rem;
+  }
 }

@@ -21,6 +21,18 @@ export const CREW_ROLES = {
 
 export const DIRECTIONS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
 
+// Direction to rotation angle mapping (for token arrows)
+export const DIRECTION_ANGLES = {
+  "N": 0,
+  "NE": 45,
+  "E": 90,
+  "SE": 135,
+  "S": 180,
+  "SW": 225,
+  "W": 270,
+  "NW": 315
+};
+
 export const POWER_MODULES = {
   weaponsArray: {
     id: "weaponsArray",
@@ -83,6 +95,110 @@ export const OVERDRIVE_DC_TABLE = {
 };
 
 /* -------------------------------------------- */
+/*  Ocean Court Express - Pre-configured Ship   */
+/* -------------------------------------------- */
+
+export const OCEAN_COURT_EXPRESS = {
+  name: "Ocean Court Express",
+  type: "vehicle",
+  img: "icons/svg/ship.svg",
+  system: {
+    vehicleType: "water",
+    attributes: {
+      ac: { flat: 16 },
+      hp: { value: 100, max: 100, temp: 0 },
+      capacity: {
+        creature: "15 crew",
+        cargo: 20
+      }
+    },
+    traits: {
+      size: "huge",
+      dimensions: "60 ft. × 20 ft."
+    }
+  },
+  flags: {
+    [MODULE_ID]: {
+      initialized: true,
+      shipClass: "Frigate (2×2)",
+      velocity: {
+        current: 0,
+        direction: "N",
+        maxAcceleration: 200,
+        maxDeceleration: 200
+      },
+      crewAssignments: {
+        captain: null,
+        helmsman: null,
+        gunners: [],
+        boatswain: null
+      },
+      crewRequirements: {
+        minimum: 5,
+        maximum: 15
+      },
+      powerModules: {
+        weaponsArray: { active: false, hp: 10, maxHp: 10 },
+        deflectorGrid: { active: false, hp: 10, maxHp: 10 },
+        thrusterOverride: { active: false, hp: 10, maxHp: 10 },
+        hullReinforcement: { active: false, hp: 10, maxHp: 10 },
+        systemRestoration: { active: false, hp: 10, maxHp: 10 },
+        warpCoreCharge: { active: false, hp: 10, maxHp: 10 }
+      },
+      warpChargeProgress: 0,
+      weapons: [
+        {
+          name: "Flower Cannon (Port)",
+          damage: "3d10",
+          damageType: "radiant",
+          range: "300/900",
+          position: "port",
+          firingArc: 90,
+          properties: [],
+          hp: 10,
+          maxHp: 10,
+          assignedGunner: null
+        },
+        {
+          name: "Flower Cannon (Starboard)",
+          damage: "3d10",
+          damageType: "radiant",
+          range: "300/900",
+          position: "starboard",
+          firingArc: 90,
+          properties: [],
+          hp: 10,
+          maxHp: 10,
+          assignedGunner: null
+        },
+        {
+          name: "Carronade (Bow)",
+          damage: "4d10",
+          damageType: "bludgeoning",
+          range: "200/600",
+          position: "bow",
+          firingArc: 45,
+          properties: ["Utilize"],
+          hp: 10,
+          maxHp: 10,
+          assignedGunner: null
+        }
+      ],
+      airSupply: {
+        current: 30,
+        max: 30
+      },
+      captainCommand: null,
+      combat: {
+        overdriveDisabled: false,
+        evadeActive: false,
+        jammingTarget: null
+      }
+    }
+  }
+};
+
+/* -------------------------------------------- */
 /*  Hooks                                       */
 /* -------------------------------------------- */
 
@@ -113,13 +229,244 @@ Hooks.once("init", () => {
 
   // Add spelljammer rolls helper to game
   game.spelljammer = {
-    rolls: SpelljammerRolls
+    rolls: SpelljammerRolls,
+    createOceanCourtExpress: createOceanCourtExpress,
+    MODULE_ID: MODULE_ID
   };
 });
 
 Hooks.once("ready", () => {
   console.log(`${MODULE_ID} | Spelljammer Ship Combat Ready`);
+
+  // Populate compendium if empty (GM only)
+  if (game.user.isGM) {
+    populateCompendium();
+  }
 });
+
+/* -------------------------------------------- */
+/*  Token Velocity/Direction Display            */
+/* -------------------------------------------- */
+
+// Draw velocity and direction on vehicle tokens
+Hooks.on("refreshToken", (token) => {
+  if (token.actor?.type !== "vehicle") return;
+
+  const sjData = token.actor.getFlag(MODULE_ID, "");
+  if (!sjData?.initialized) return;
+
+  // Remove existing spelljammer overlay
+  const existingOverlay = token.children.find(c => c.name === "spelljammer-overlay");
+  if (existingOverlay) {
+    token.removeChild(existingOverlay);
+  }
+
+  // Create overlay container
+  const overlay = new PIXI.Container();
+  overlay.name = "spelljammer-overlay";
+
+  const velocity = sjData.velocity?.current ?? 0;
+  const direction = sjData.velocity?.direction ?? "N";
+
+  // Only show if velocity > 0
+  if (velocity > 0) {
+    // Draw direction arrow
+    const arrow = new PIXI.Graphics();
+    const arrowSize = Math.min(token.w, token.h) * 0.3;
+    const angle = (DIRECTION_ANGLES[direction] - 90) * (Math.PI / 180); // Adjust for PIXI coordinates
+
+    arrow.beginFill(0x00ccff, 0.8);
+    arrow.lineStyle(2, 0x0088aa, 1);
+
+    // Arrow pointing in direction
+    const tipX = token.w / 2 + Math.cos(angle) * arrowSize;
+    const tipY = token.h / 2 + Math.sin(angle) * arrowSize;
+    const baseX = token.w / 2 - Math.cos(angle) * (arrowSize * 0.3);
+    const baseY = token.h / 2 - Math.sin(angle) * (arrowSize * 0.3);
+
+    // Draw arrow head
+    const perpAngle = angle + Math.PI / 2;
+    const wingSize = arrowSize * 0.3;
+
+    arrow.moveTo(tipX, tipY);
+    arrow.lineTo(baseX + Math.cos(perpAngle) * wingSize, baseY + Math.sin(perpAngle) * wingSize);
+    arrow.lineTo(baseX - Math.cos(perpAngle) * wingSize, baseY - Math.sin(perpAngle) * wingSize);
+    arrow.lineTo(tipX, tipY);
+    arrow.endFill();
+
+    overlay.addChild(arrow);
+
+    // Draw velocity text
+    const velocityText = new PIXI.Text(`${velocity} ft`, {
+      fontFamily: "Arial",
+      fontSize: Math.max(12, token.w * 0.15),
+      fill: 0x00ccff,
+      stroke: 0x000000,
+      strokeThickness: 3,
+      fontWeight: "bold"
+    });
+    velocityText.anchor.set(0.5, 0);
+    velocityText.position.set(token.w / 2, token.h + 2);
+    overlay.addChild(velocityText);
+
+    // Draw direction text
+    const dirText = new PIXI.Text(direction, {
+      fontFamily: "Arial",
+      fontSize: Math.max(10, token.w * 0.12),
+      fill: 0xffffff,
+      stroke: 0x000000,
+      strokeThickness: 2
+    });
+    dirText.anchor.set(0.5, 1);
+    dirText.position.set(token.w / 2, -2);
+    overlay.addChild(dirText);
+  }
+
+  token.addChild(overlay);
+});
+
+// Update token display when actor is updated
+Hooks.on("updateActor", (actor, changes, options, userId) => {
+  if (actor.type !== "vehicle") return;
+
+  // Check if spelljammer flags changed
+  if (changes.flags?.[MODULE_ID]) {
+    // Refresh all tokens for this actor
+    const tokens = actor.getActiveTokens();
+    for (const token of tokens) {
+      token.refresh();
+    }
+  }
+});
+
+/* -------------------------------------------- */
+/*  Combat Automation                           */
+/* -------------------------------------------- */
+
+// Reset turn-based effects at start of turn
+Hooks.on("updateCombat", async (combat, changes, options, userId) => {
+  if (!game.user.isGM) return;
+  if (!("turn" in changes)) return;
+
+  const combatant = combat.combatant;
+  if (!combatant?.actor || combatant.actor.type !== "vehicle") return;
+
+  const actor = combatant.actor;
+  const sjData = actor.getFlag(MODULE_ID, "");
+  if (!sjData?.initialized) return;
+
+  // Reset evade at start of turn
+  if (sjData.combat?.evadeActive) {
+    await actor.update({
+      [`flags.${MODULE_ID}.combat.evadeActive`]: false
+    });
+
+    ChatMessage.create({
+      speaker: ChatMessage.getSpeaker({ actor }),
+      content: `<div class="spelljammer-chat"><p><em>Evade maneuver has ended.</em></p></div>`
+    });
+  }
+
+  // Increment warp charge if active
+  if (sjData.powerModules?.warpCoreCharge?.active) {
+    const newProgress = (sjData.warpChargeProgress ?? 0) + 1;
+    await actor.update({
+      [`flags.${MODULE_ID}.warpChargeProgress`]: newProgress
+    });
+
+    if (newProgress >= 3) {
+      ChatMessage.create({
+        speaker: ChatMessage.getSpeaker({ actor }),
+        content: `<div class="spelljammer-chat warp-ready">
+          <h3>⚡ WARP DRIVE CHARGED ⚡</h3>
+          <p>The ${actor.name}'s warp core is fully charged! The ship can now initiate a warp jump to escape combat!</p>
+        </div>`
+      });
+    } else {
+      ChatMessage.create({
+        speaker: ChatMessage.getSpeaker({ actor }),
+        content: `<div class="spelljammer-chat">
+          <p>Warp Core charging: ${newProgress}/3 turns</p>
+        </div>`
+      });
+    }
+  }
+
+  // Reset overdrive disabled flag
+  if (sjData.combat?.overdriveDisabled) {
+    await actor.update({
+      [`flags.${MODULE_ID}.combat.overdriveDisabled`]: false
+    });
+
+    ChatMessage.create({
+      speaker: ChatMessage.getSpeaker({ actor }),
+      content: `<div class="spelljammer-chat"><p><em>Helm systems recovered. Overdrive is available again.</em></p></div>`
+    });
+  }
+});
+
+// Auto-apply token rotation based on direction
+Hooks.on("preUpdateActor", (actor, changes, options, userId) => {
+  if (actor.type !== "vehicle") return;
+
+  const newDirection = changes.flags?.[MODULE_ID]?.velocity?.direction;
+  if (!newDirection) return;
+
+  // Update all tokens for this actor to face the new direction
+  const tokens = actor.getActiveTokens();
+  const rotation = DIRECTION_ANGLES[newDirection] ?? 0;
+
+  for (const token of tokens) {
+    token.document.update({ rotation });
+  }
+});
+
+/* -------------------------------------------- */
+/*  Compendium Population                       */
+/* -------------------------------------------- */
+
+async function populateCompendium() {
+  const packName = `${MODULE_ID}.spelljammer-ships`;
+  const pack = game.packs.get(packName);
+
+  if (!pack) {
+    console.log(`${MODULE_ID} | Compendium pack not found`);
+    return;
+  }
+
+  // Check if pack is empty
+  const index = await pack.getIndex();
+  if (index.size > 0) {
+    console.log(`${MODULE_ID} | Compendium already populated`);
+    return;
+  }
+
+  // Unlock the pack for editing
+  await pack.configure({ locked: false });
+
+  // Create Ocean Court Express
+  try {
+    const actor = await Actor.create(OCEAN_COURT_EXPRESS, { pack: packName });
+    console.log(`${MODULE_ID} | Created Ocean Court Express in compendium`);
+
+    ui.notifications.info("Spelljammer Ships compendium populated with Ocean Court Express!");
+  } catch (err) {
+    console.error(`${MODULE_ID} | Error creating compendium entry:`, err);
+  }
+
+  // Re-lock the pack
+  await pack.configure({ locked: true });
+}
+
+/**
+ * Create a new Ocean Court Express actor in the world
+ */
+export async function createOceanCourtExpress() {
+  const actor = await Actor.create(OCEAN_COURT_EXPRESS);
+  ui.notifications.info(`Created ${actor.name}!`);
+  actor.sheet.render(true);
+  return actor;
+}
 
 /* -------------------------------------------- */
 /*  Socket Handling for Multiplayer             */
@@ -139,6 +486,9 @@ function handleSocketMessage(data) {
       break;
     case "refreshSheet":
       handleSheetRefresh(data);
+      break;
+    case "syncVelocity":
+      handleVelocitySync(data);
       break;
   }
 }
@@ -178,6 +528,15 @@ function handleSheetRefresh(data) {
   });
 }
 
+async function handleVelocitySync(data) {
+  const actor = game.actors.get(data.actorId);
+  if (!actor || !game.user.isGM) return;
+
+  await actor.update({
+    [`flags.${MODULE_ID}.velocity`]: data.velocity
+  });
+}
+
 /* -------------------------------------------- */
 /*  Settings Registration                       */
 /* -------------------------------------------- */
@@ -196,6 +555,24 @@ function registerSettings() {
     name: "Use Y2K Theme",
     hint: "Enable the retro Y2K-inspired visual theme",
     scope: "client",
+    config: true,
+    type: Boolean,
+    default: true
+  });
+
+  game.settings.register(MODULE_ID, "showTokenOverlay", {
+    name: "Show Token Velocity Overlay",
+    hint: "Display velocity and direction indicators on ship tokens",
+    scope: "client",
+    config: true,
+    type: Boolean,
+    default: true
+  });
+
+  game.settings.register(MODULE_ID, "autoRotateTokens", {
+    name: "Auto-Rotate Tokens",
+    hint: "Automatically rotate ship tokens to face their current direction",
+    scope: "world",
     config: true,
     type: Boolean,
     default: true
