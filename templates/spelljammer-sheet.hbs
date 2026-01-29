@@ -1,0 +1,24 @@
+{{!-- Main Spelljammer Ship Sheet Template --}}
+<div class="spelljammer-sheet{{#if spelljammer.useY2KTheme}} y2k-theme{{/if}}">
+
+  {{!-- Bridge Stations Grid --}}
+  <div class="bridge-stations">
+
+    {{!-- Captain Station --}}
+    {{> "modules/spelljammer-ship-combat/templates/parts/captain-station.hbs"}}
+
+    {{!-- Helmsman Station --}}
+    {{> "modules/spelljammer-ship-combat/templates/parts/helmsman-station.hbs"}}
+
+    {{!-- Gunner Station --}}
+    {{> "modules/spelljammer-ship-combat/templates/parts/gunner-station.hbs"}}
+
+    {{!-- Boatswain Station --}}
+    {{> "modules/spelljammer-ship-combat/templates/parts/boatswain-station.hbs"}}
+
+  </div>
+
+  {{!-- Crew Assignment Section --}}
+  {{> "modules/spelljammer-ship-combat/templates/parts/crew-assignment.hbs"}}
+
+</div>

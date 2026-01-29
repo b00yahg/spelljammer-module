@@ -1,0 +1,23 @@
+{{!-- Weapons List Partial --}}
+{{!-- This can be used standalone or is embedded in gunner-station.hbs --}}
+
+{{#each weapons as |weapon|}}
+<div class="weapon-entry {{#if (lte weapon.hp 0)}}disabled{{/if}}">
+  <div class="weapon-info">
+    <span class="weapon-name">{{weapon.name}}</span>
+    <span class="weapon-range">{{weapon.range}} ft</span>
+    <span class="weapon-damage">{{weapon.damage}} {{weapon.damageType}}</span>
+  </div>
+  <div class="weapon-stats">
+    <span class="weapon-position">{{weapon.position}} ({{weapon.firingArc}}°)</span>
+    <span class="weapon-hp">HP: {{weapon.hp}}/{{weapon.maxHp}}</span>
+  </div>
+  {{#if weapon.properties.length}}
+  <div class="weapon-properties">
+    {{#each weapon.properties as |prop|}}
+    <span class="property">{{prop}}</span>
+    {{/each}}
+  </div>
+  {{/if}}
+</div>
+{{/each}}

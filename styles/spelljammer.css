@@ -1,0 +1,1362 @@
+/**
+ * Spelljammer Ship Combat - Stylesheet
+ * Foundry VTT v13 Compatible
+ */
+
+/* -------------------------------------------- */
+/*  CSS Variables                               */
+/* -------------------------------------------- */
+
+.spelljammer-ship {
+  --sjc-captain: #6a1b9a;
+  --sjc-captain-light: #9c4dcc;
+  --sjc-helmsman: #0277bd;
+  --sjc-helmsman-light: #58a5f0;
+  --sjc-gunner: #c62828;
+  --sjc-gunner-light: #ff5f52;
+  --sjc-boatswain: #2e7d32;
+  --sjc-boatswain-light: #60ad5e;
+
+  --sjc-bg-primary: #1a1a2e;
+  --sjc-bg-secondary: #16213e;
+  --sjc-bg-card: #0f0f23;
+  --sjc-text-primary: #eee;
+  --sjc-text-secondary: #aaa;
+  --sjc-border: #333;
+  --sjc-accent: #00ccff;
+  --sjc-success: #2ecc71;
+  --sjc-warning: #f1c40f;
+  --sjc-danger: #e74c3c;
+}
+
+/* Y2K Theme Overrides */
+.spelljammer-sheet.y2k-theme {
+  --sjc-accent: #00eeff;
+  --sjc-bg-primary: #001122;
+  --sjc-bg-secondary: #0a1929;
+  --sjc-bg-card: rgba(10, 20, 40, 0.95);
+  --sjc-border: rgba(0, 204, 255, 0.3);
+}
+
+/* -------------------------------------------- */
+/*  Sheet Layout                                */
+/* -------------------------------------------- */
+
+.spelljammer-ship .window-content {
+  background: linear-gradient(135deg, var(--sjc-bg-primary) 0%, var(--sjc-bg-secondary) 100%);
+  padding: 0;
+}
+
+.spelljammer-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  color: var(--sjc-text-primary);
+}
+
+/* -------------------------------------------- */
+/*  Header Styles                               */
+/* -------------------------------------------- */
+
+.spelljammer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--sjc-bg-card);
+  border: 1px solid var(--sjc-border);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.spelljammer-header .header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.spelljammer-header .profile-img {
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  border: 2px solid var(--sjc-accent);
+  object-fit: cover;
+}
+
+.spelljammer-header .ship-name input {
+  font-size: 1.5rem;
+  font-weight: bold;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--sjc-accent);
+  color: var(--sjc-accent);
+  padding: 0.25rem;
+  width: 300px;
+}
+
+.spelljammer-header .ship-class {
+  font-size: 0.875rem;
+  color: var(--sjc-text-secondary);
+  font-style: italic;
+}
+
+.spelljammer-header .header-stats {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.spelljammer-header .stat-block {
+  background: var(--sjc-bg-secondary);
+  border: 1px solid var(--sjc-border);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  text-align: center;
+  min-width: 80px;
+}
+
+.spelljammer-header .stat-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: var(--sjc-text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.spelljammer-header .stat-value {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: var(--sjc-accent);
+}
+
+.spelljammer-header .stat-value input {
+  background: transparent;
+  border: none;
+  color: var(--sjc-accent);
+  font-size: 1.25rem;
+  font-weight: bold;
+  text-align: center;
+  width: 50px;
+}
+
+.spelljammer-header .hp-display,
+.spelljammer-header .velocity-display {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.spelljammer-header .hp-separator,
+.spelljammer-header .air-separator {
+  color: var(--sjc-text-secondary);
+}
+
+.spelljammer-header .hp-current {
+  width: 45px !important;
+}
+
+.spelljammer-header .hp-max,
+.spelljammer-header .air-max {
+  width: 40px !important;
+  color: var(--sjc-text-secondary) !important;
+}
+
+.spelljammer-header .velocity-unit {
+  font-size: 0.7rem;
+  color: var(--sjc-text-secondary);
+}
+
+.spelljammer-header select {
+  background: var(--sjc-bg-primary);
+  border: 1px solid var(--sjc-border);
+  color: var(--sjc-accent);
+  padding: 0.25rem;
+  border-radius: 4px;
+}
+
+/* -------------------------------------------- */
+/*  Bridge Stations Grid                        */
+/* -------------------------------------------- */
+
+.bridge-stations {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 800px) {
+  .bridge-stations {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* -------------------------------------------- */
+/*  Station Styles                              */
+/* -------------------------------------------- */
+
+.station {
+  background: var(--sjc-bg-card);
+  border: 1px solid var(--sjc-border);
+  border-radius: 8px;
+  padding: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.station::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+}
+
+.captain-station::before { background: var(--sjc-captain); }
+.helmsman-station::before { background: var(--sjc-helmsman); }
+.gunner-station::before { background: var(--sjc-gunner); }
+.boatswain-station::before { background: var(--sjc-boatswain); }
+
+/* Full width stations */
+.gunner-station,
+.boatswain-station {
+  grid-column: span 2;
+}
+
+@media (max-width: 800px) {
+  .gunner-station,
+  .boatswain-station {
+    grid-column: span 1;
+  }
+}
+
+.station-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--sjc-border);
+}
+
+.station-title {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: var(--sjc-text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.station-title i {
+  color: var(--sjc-accent);
+}
+
+/* -------------------------------------------- */
+/*  Role Badges                                 */
+/* -------------------------------------------- */
+
+.role-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: white;
+}
+
+.role-badge.captain { background: var(--sjc-captain); }
+.role-badge.helmsman { background: var(--sjc-helmsman); }
+.role-badge.gunner { background: var(--sjc-gunner); }
+.role-badge.boatswain { background: var(--sjc-boatswain); }
+
+/* -------------------------------------------- */
+/*  Crew Assignment Display                     */
+/* -------------------------------------------- */
+
+.crew-assignment-display {
+  background: var(--sjc-bg-secondary);
+  border: 1px solid var(--sjc-border);
+  border-radius: 6px;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.assigned-crew {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  padding: 0.25rem;
+  border-radius: 4px;
+}
+
+.assigned-crew:hover {
+  background: rgba(0, 204, 255, 0.1);
+}
+
+.crew-portrait {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--sjc-accent);
+  object-fit: cover;
+}
+
+.crew-portrait.small {
+  width: 32px;
+  height: 32px;
+}
+
+.crew-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.crew-name {
+  font-weight: bold;
+  color: var(--sjc-text-primary);
+}
+
+.crew-stats {
+  font-size: 0.8rem;
+  color: var(--sjc-text-secondary);
+}
+
+.no-crew {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: var(--sjc-text-secondary);
+  font-style: italic;
+  padding: 0.5rem;
+}
+
+.remove-crew {
+  background: var(--sjc-danger);
+  border: none;
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.assigned-crew:hover .remove-crew {
+  opacity: 1;
+}
+
+/* -------------------------------------------- */
+/*  Ability Sections                            */
+/* -------------------------------------------- */
+
+.ability-section {
+  margin-bottom: 1rem;
+}
+
+.section-subtitle {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: var(--sjc-accent);
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ability-item {
+  background: var(--sjc-bg-secondary);
+  border: 1px solid var(--sjc-border);
+  border-radius: 6px;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.ability-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.25rem;
+}
+
+.ability-name {
+  font-weight: bold;
+  color: var(--sjc-text-primary);
+}
+
+.ability-desc {
+  font-size: 0.85rem;
+  color: var(--sjc-text-secondary);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.action-type {
+  font-size: 0.7rem;
+  background: var(--sjc-bg-primary);
+  padding: 0.15rem 0.5rem;
+  border-radius: 3px;
+  color: var(--sjc-text-secondary);
+}
+
+.spell-level {
+  font-size: 0.7rem;
+  background: var(--sjc-captain);
+  padding: 0.15rem 0.5rem;
+  border-radius: 3px;
+  color: white;
+}
+
+/* -------------------------------------------- */
+/*  Buttons                                     */
+/* -------------------------------------------- */
+
+.roll-button,
+.action-button,
+.add-button {
+  background: var(--sjc-accent);
+  border: none;
+  color: var(--sjc-bg-primary);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s;
+}
+
+.roll-button:hover,
+.action-button:hover,
+.add-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 204, 255, 0.3);
+}
+
+.roll-button:disabled,
+.action-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.roll-button.small,
+.action-button.small {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+}
+
+.roll-button.tiny {
+  padding: 0.2rem 0.4rem;
+  font-size: 0.75rem;
+}
+
+.delete-button {
+  background: var(--sjc-danger);
+  border: none;
+  color: white;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.delete-button:hover {
+  background: #c0392b;
+}
+
+/* -------------------------------------------- */
+/*  Command Options (Captain)                   */
+/* -------------------------------------------- */
+
+.command-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.command-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  background: var(--sjc-bg-secondary);
+  border: 2px solid var(--sjc-border);
+  border-radius: 6px;
+  padding: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.command-option:hover {
+  border-color: var(--sjc-captain-light);
+}
+
+.command-option.selected,
+.command-option:has(input:checked) {
+  border-color: var(--sjc-captain);
+  background: rgba(106, 27, 154, 0.15);
+}
+
+.command-option input[type="radio"] {
+  margin-top: 0.25rem;
+  accent-color: var(--sjc-captain);
+}
+
+.command-content {
+  flex: 1;
+}
+
+.command-content strong {
+  display: block;
+  color: var(--sjc-text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.command-content span {
+  font-size: 0.85rem;
+  color: var(--sjc-text-secondary);
+}
+
+/* -------------------------------------------- */
+/*  Movement Grid (Helmsman)                    */
+/* -------------------------------------------- */
+
+.movement-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.movement-item {
+  background: var(--sjc-bg-secondary);
+  border: 1px solid var(--sjc-border);
+  border-radius: 6px;
+  padding: 0.75rem;
+}
+
+.movement-item.full-width {
+  grid-column: span 2;
+}
+
+.movement-item label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--sjc-text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.movement-value {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.movement-value input {
+  background: transparent;
+  border: 1px solid var(--sjc-border);
+  color: var(--sjc-accent);
+  font-size: 1.1rem;
+  font-weight: bold;
+  width: 80px;
+  padding: 0.25rem;
+  border-radius: 4px;
+}
+
+.movement-value .unit {
+  font-size: 0.8rem;
+  color: var(--sjc-text-secondary);
+}
+
+.dc-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dc-value {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: var(--sjc-warning);
+}
+
+.dc-note {
+  font-size: 0.8rem;
+  color: var(--sjc-text-secondary);
+}
+
+/* DC Table */
+.dc-table-toggle summary {
+  cursor: pointer;
+  color: var(--sjc-accent);
+  font-size: 0.85rem;
+}
+
+.dc-reference-table {
+  margin-top: 0.5rem;
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.85rem;
+}
+
+.dc-reference-table th,
+.dc-reference-table td {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--sjc-border);
+  text-align: center;
+}
+
+.dc-reference-table th {
+  background: var(--sjc-helmsman);
+  color: white;
+}
+
+/* -------------------------------------------- */
+/*  Collision Grid                              */
+/* -------------------------------------------- */
+
+.collision-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.collision-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--sjc-bg-secondary);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.size-label {
+  font-size: 0.8rem;
+  color: var(--sjc-text-secondary);
+}
+
+.collision-note {
+  font-size: 0.8rem;
+  color: var(--sjc-text-secondary);
+  font-style: italic;
+  margin: 0;
+}
+
+/* -------------------------------------------- */
+/*  Weapons Table (Gunner)                      */
+/* -------------------------------------------- */
+
+.weapons-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.weapons-table {
+  background: var(--sjc-bg-secondary);
+  border: 1px solid var(--sjc-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.weapon-row {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 0.75fr 1.25fr 1fr 0.75fr 1fr 0.75fr;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  align-items: center;
+  border-bottom: 1px solid var(--sjc-border);
+}
+
+.weapon-row:last-child {
+  border-bottom: none;
+}
+
+.weapon-row.header {
+  background: var(--sjc-gunner);
+  font-weight: bold;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+.weapon-row.disabled {
+  opacity: 0.5;
+}
+
+.weapon-col {
+  font-size: 0.85rem;
+}
+
+.weapon-name-input,
+.weapon-range-input,
+.weapon-damage-input {
+  background: transparent;
+  border: 1px solid var(--sjc-border);
+  color: var(--sjc-text-primary);
+  padding: 0.25rem;
+  border-radius: 3px;
+  width: 100%;
+}
+
+.attack-bonus {
+  font-weight: bold;
+  color: var(--sjc-accent);
+}
+
+.damage-type-select,
+.position-select,
+.gunner-select {
+  background: var(--sjc-bg-primary);
+  border: 1px solid var(--sjc-border);
+  color: var(--sjc-text-primary);
+  padding: 0.25rem;
+  border-radius: 3px;
+  width: 100%;
+  font-size: 0.8rem;
+}
+
+.hp-input {
+  width: 40px;
+  background: transparent;
+  border: 1px solid var(--sjc-border);
+  color: var(--sjc-text-primary);
+  padding: 0.15rem;
+  border-radius: 3px;
+  text-align: center;
+}
+
+.hp-max {
+  font-size: 0.8rem;
+  color: var(--sjc-text-secondary);
+}
+
+.weapon-properties {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+}
+
+.property-tag {
+  font-size: 0.65rem;
+  background: var(--sjc-bg-primary);
+  color: var(--sjc-text-secondary);
+  padding: 0.1rem 0.3rem;
+  border-radius: 2px;
+}
+
+.no-weapons {
+  padding: 2rem;
+  text-align: center;
+  color: var(--sjc-text-secondary);
+  font-style: italic;
+}
+
+.power-bonus-notice,
+.captain-bonus {
+  background: rgba(46, 204, 113, 0.15);
+  border: 1px solid var(--sjc-success);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  color: var(--sjc-success);
+  font-size: 0.85rem;
+}
+
+/* Properties Reference */
+.properties-reference {
+  font-size: 0.85rem;
+}
+
+.properties-reference summary {
+  cursor: pointer;
+  color: var(--sjc-accent);
+}
+
+.properties-list {
+  margin-top: 0.5rem;
+  padding-left: 1rem;
+}
+
+.property-item {
+  margin-bottom: 0.5rem;
+  color: var(--sjc-text-secondary);
+}
+
+.property-item strong {
+  color: var(--sjc-text-primary);
+}
+
+/* -------------------------------------------- */
+/*  Power Modules (Boatswain)                   */
+/* -------------------------------------------- */
+
+.power-charge-counter {
+  background: var(--sjc-bg-secondary);
+  border: 1px solid var(--sjc-border);
+  border-radius: 6px;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.charge-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.charge-label {
+  font-weight: bold;
+  color: var(--sjc-text-primary);
+}
+
+.charge-used {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--sjc-accent);
+}
+
+.charge-separator {
+  color: var(--sjc-text-secondary);
+}
+
+.charge-max {
+  font-size: 1.25rem;
+  color: var(--sjc-text-secondary);
+}
+
+.bonus-charge {
+  background: var(--sjc-success);
+  color: white;
+  padding: 0.15rem 0.5rem;
+  border-radius: 3px;
+  font-weight: bold;
+}
+
+.bonus-note {
+  font-size: 0.8rem;
+  color: var(--sjc-success);
+  font-style: italic;
+}
+
+.charge-bar {
+  height: 8px;
+  background: var(--sjc-bg-primary);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.charge-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--sjc-boatswain), var(--sjc-boatswain-light));
+  transition: width 0.3s;
+}
+
+.power-modules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 0.75rem;
+}
+
+.power-module {
+  background: var(--sjc-bg-secondary);
+  border: 2px solid var(--sjc-border);
+  border-radius: 6px;
+  padding: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.power-module:hover {
+  border-color: var(--sjc-boatswain);
+  transform: translateX(4px);
+}
+
+.power-module.active {
+  border-color: var(--sjc-boatswain);
+  background: rgba(46, 125, 50, 0.15);
+}
+
+.power-module.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.power-module.disabled:hover {
+  transform: none;
+}
+
+.module-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.module-name {
+  font-weight: bold;
+  color: var(--sjc-text-primary);
+}
+
+.module-cost {
+  background: var(--sjc-boatswain);
+  color: white;
+  padding: 0.15rem 0.5rem;
+  border-radius: 3px;
+  font-size: 0.75rem;
+}
+
+.module-desc {
+  font-size: 0.8rem;
+  color: var(--sjc-text-secondary);
+  margin: 0 0 0.5rem 0;
+}
+
+.module-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.module-hp {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+  color: var(--sjc-text-secondary);
+}
+
+.module-hp-input {
+  width: 40px;
+  background: var(--sjc-bg-primary);
+  border: 1px solid var(--sjc-border);
+  color: var(--sjc-text-primary);
+  padding: 0.15rem;
+  border-radius: 3px;
+  text-align: center;
+}
+
+.module-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.toggle-label {
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: var(--sjc-text-secondary);
+}
+
+.toggle-switch {
+  width: 40px;
+  height: 20px;
+  background: var(--sjc-bg-primary);
+  border-radius: 10px;
+  position: relative;
+  transition: background 0.2s;
+}
+
+.toggle-switch.on {
+  background: var(--sjc-boatswain);
+}
+
+.toggle-slider {
+  width: 16px;
+  height: 16px;
+  background: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: left 0.2s;
+}
+
+.toggle-switch.on .toggle-slider {
+  left: 22px;
+}
+
+.disabled-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 4px;
+  color: var(--sjc-danger);
+}
+
+.disabled-overlay i {
+  font-size: 1.5rem;
+}
+
+/* Warp Core Progress */
+.warp-core-progress {
+  background: var(--sjc-bg-secondary);
+  border: 1px solid var(--sjc-accent);
+  border-radius: 6px;
+  padding: 0.75rem;
+  margin-top: 1rem;
+}
+
+.warp-core-progress h4 {
+  margin: 0 0 0.5rem 0;
+  color: var(--sjc-accent);
+}
+
+.warp-progress-bar {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.warp-segment {
+  flex: 1;
+  background: var(--sjc-bg-primary);
+  border: 1px solid var(--sjc-border);
+  border-radius: 4px;
+  padding: 0.5rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--sjc-text-secondary);
+}
+
+.warp-segment.charged {
+  background: var(--sjc-accent);
+  color: var(--sjc-bg-primary);
+  font-weight: bold;
+}
+
+.warp-ready {
+  margin-top: 0.75rem;
+  background: linear-gradient(90deg, var(--sjc-accent), #9333ff);
+  color: white;
+  padding: 0.75rem;
+  border-radius: 6px;
+  text-align: center;
+  font-weight: bold;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Effects Summary */
+.active-effects-list {
+  background: var(--sjc-bg-secondary);
+  border: 1px solid var(--sjc-border);
+  border-radius: 6px;
+  padding: 0.5rem;
+}
+
+.active-effect {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem;
+  font-size: 0.85rem;
+  color: var(--sjc-success);
+}
+
+.no-effects {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: var(--sjc-text-secondary);
+  font-style: italic;
+  padding: 0.5rem;
+}
+
+.upgrades-note {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--sjc-text-secondary);
+  font-style: italic;
+  margin-top: 1rem;
+  padding: 0.5rem;
+  background: var(--sjc-bg-secondary);
+  border-radius: 6px;
+}
+
+.upgrades-note i {
+  color: var(--sjc-accent);
+}
+
+/* -------------------------------------------- */
+/*  Crew Assignment Section                     */
+/* -------------------------------------------- */
+
+.crew-assignment-section {
+  background: var(--sjc-bg-card);
+  border: 1px solid var(--sjc-border);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.crew-assignment-section .section-title {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: var(--sjc-accent);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.crew-roles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.role-assignment {
+  background: var(--sjc-bg-secondary);
+  border: 1px solid var(--sjc-border);
+  border-radius: 6px;
+  padding: 0.75rem;
+}
+
+.role-assignment .role-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.role-ability {
+  font-size: 0.7rem;
+  color: var(--sjc-text-secondary);
+}
+
+.crew-select {
+  width: 100%;
+  background: var(--sjc-bg-primary);
+  border: 1px solid var(--sjc-border);
+  color: var(--sjc-text-primary);
+  padding: 0.5rem;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+}
+
+.role-desc {
+  font-size: 0.8rem;
+  color: var(--sjc-text-secondary);
+  margin: 0;
+}
+
+.gunner-slots {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.gunner-slot label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--sjc-text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.gunner-slot .crew-select {
+  margin-bottom: 0;
+}
+
+.gunner-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.gunner-slot.assigned-crew {
+  background: var(--sjc-bg-secondary);
+  border: 1px solid var(--sjc-border);
+  border-radius: 6px;
+  padding: 0.5rem;
+}
+
+.gunner-number {
+  font-weight: bold;
+  color: var(--sjc-gunner);
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--sjc-bg-primary);
+  border-radius: 50%;
+}
+
+.crew-reference {
+  margin-top: 1rem;
+}
+
+.crew-reference summary {
+  cursor: pointer;
+  color: var(--sjc-accent);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.reference-content {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: var(--sjc-bg-secondary);
+  border-radius: 6px;
+}
+
+.reference-item {
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--sjc-text-secondary);
+}
+
+.reference-item strong {
+  color: var(--sjc-text-primary);
+}
+
+/* -------------------------------------------- */
+/*  Chat Message Styles                         */
+/* -------------------------------------------- */
+
+.spelljammer-chat {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border: 1px solid #333;
+  border-radius: 6px;
+  padding: 0.75rem;
+  color: #eee;
+}
+
+.spelljammer-chat h3 {
+  margin: 0 0 0.5rem 0;
+  color: #00ccff;
+  font-size: 1rem;
+}
+
+.spelljammer-chat p {
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+}
+
+.spelljammer-chat em {
+  color: #aaa;
+}
+
+.spelljammer-chat strong {
+  color: #00ccff;
+}
+
+.spelljammer-chat .result {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.spelljammer-chat .result.success {
+  background: rgba(46, 204, 113, 0.2);
+  color: #2ecc71;
+}
+
+.spelljammer-chat .result.failure {
+  background: rgba(231, 76, 60, 0.2);
+  color: #e74c3c;
+}
+
+.spelljammer-chat .damage {
+  color: #e74c3c;
+}
+
+.spelljammer-chat .bonus-note {
+  color: #2ecc71;
+}
+
+.spelljammer-damage-roll {
+  background: #c62828;
+  border: none;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.spelljammer-damage-roll:hover {
+  background: #d32f2f;
+}
+
+/* -------------------------------------------- */
+/*  Y2K Theme Enhancements                      */
+/* -------------------------------------------- */
+
+.y2k-theme .station {
+  box-shadow: 0 0 15px rgba(0, 204, 255, 0.1);
+}
+
+.y2k-theme .station::after {
+  content: '';
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 40px;
+  height: 40px;
+  border-right: 2px solid var(--sjc-border);
+  border-bottom: 2px solid var(--sjc-border);
+  opacity: 0.5;
+  border-bottom-right-radius: 4px;
+}
+
+.y2k-theme .roll-button,
+.y2k-theme .action-button {
+  box-shadow: 0 0 8px rgba(0, 204, 255, 0.3);
+}
+
+.y2k-theme .spelljammer-header .ship-name input {
+  text-shadow: 0 0 10px rgba(0, 204, 255, 0.5);
+}
+
+/* Scanline effect for Y2K theme */
+.y2k-theme::after {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+  background-size: 100% 2px;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.15;
+}

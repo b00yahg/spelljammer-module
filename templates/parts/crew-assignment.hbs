@@ -1,0 +1,150 @@
+{{!-- Crew Assignment Section --}}
+<section class="crew-assignment-section">
+  <h2 class="section-title">
+    <i class="fas fa-users"></i> Crew Assignments
+  </h2>
+
+  <div class="crew-roles-grid">
+    {{!-- Captain Assignment --}}
+    <div class="role-assignment captain-role">
+      <div class="role-header">
+        <span class="role-badge captain">CAPTAIN</span>
+        <span class="role-ability">CHA + Proficiency</span>
+      </div>
+      <select data-action="assignCrew" data-role="captain" class="crew-select">
+        <option value="">-- Select Captain --</option>
+        {{#each spelljammer.availableCharacters as |char|}}
+          <option value="{{char.id}}"
+                  {{#if (sjc-eq char.id ../spelljammer.crewAssignments.captain)}}selected{{/if}}>
+            {{char.name}}
+          </option>
+        {{/each}}
+      </select>
+      <p class="role-desc">Commands the vessel, rolls initiative, issues orders</p>
+    </div>
+
+    {{!-- Helmsman Assignment --}}
+    <div class="role-assignment helmsman-role">
+      <div class="role-header">
+        <span class="role-badge helmsman">HELMSMAN</span>
+        <span class="role-ability">WIS + Proficiency</span>
+      </div>
+      <select data-action="assignCrew" data-role="helmsman" class="crew-select">
+        <option value="">-- Select Helmsman --</option>
+        {{#each spelljammer.availableCharacters as |char|}}
+          <option value="{{char.id}}"
+                  {{#if (sjc-eq char.id ../spelljammer.crewAssignments.helmsman)}}selected{{/if}}>
+            {{char.name}}
+          </option>
+        {{/each}}
+      </select>
+      <p class="role-desc">Controls movement, acceleration, and evasive maneuvers</p>
+    </div>
+
+    {{!-- Boatswain Assignment --}}
+    <div class="role-assignment boatswain-role">
+      <div class="role-header">
+        <span class="role-badge boatswain">BOATSWAIN</span>
+        <span class="role-ability">Proficiency = Power Charges</span>
+      </div>
+      <select data-action="assignCrew" data-role="boatswain" class="crew-select">
+        <option value="">-- Select Boatswain --</option>
+        {{#each spelljammer.availableCharacters as |char|}}
+          <option value="{{char.id}}"
+                  {{#if (sjc-eq char.id ../spelljammer.crewAssignments.boatswain)}}selected{{/if}}>
+            {{char.name}}
+          </option>
+        {{/each}}
+      </select>
+      <p class="role-desc">Manages power allocation to ship modules</p>
+    </div>
+
+    {{!-- Gunner Assignments --}}
+    <div class="role-assignment gunner-role">
+      <div class="role-header">
+        <span class="role-badge gunner">GUNNERS</span>
+        <span class="role-ability">DEX + Proficiency</span>
+      </div>
+      <div class="gunner-slots">
+        {{!-- Gunner 1 --}}
+        <div class="gunner-slot">
+          <label>Gunner 1:</label>
+          <select data-action="assignCrew" data-role="gunner" data-gunner-index="0" class="crew-select">
+            <option value="">-- Select Gunner --</option>
+            {{#each spelljammer.availableCharacters as |char|}}
+              <option value="{{char.id}}"
+                      {{#if (sjc-eq char.id (lookup ../spelljammer.crewAssignments.gunners 0))}}selected{{/if}}>
+                {{char.name}}
+              </option>
+            {{/each}}
+          </select>
+        </div>
+        {{!-- Gunner 2 --}}
+        <div class="gunner-slot">
+          <label>Gunner 2:</label>
+          <select data-action="assignCrew" data-role="gunner" data-gunner-index="1" class="crew-select">
+            <option value="">-- Select Gunner --</option>
+            {{#each spelljammer.availableCharacters as |char|}}
+              <option value="{{char.id}}"
+                      {{#if (sjc-eq char.id (lookup ../spelljammer.crewAssignments.gunners 1))}}selected{{/if}}>
+                {{char.name}}
+              </option>
+            {{/each}}
+          </select>
+        </div>
+        {{!-- Gunner 3 --}}
+        <div class="gunner-slot">
+          <label>Gunner 3:</label>
+          <select data-action="assignCrew" data-role="gunner" data-gunner-index="2" class="crew-select">
+            <option value="">-- Select Gunner --</option>
+            {{#each spelljammer.availableCharacters as |char|}}
+              <option value="{{char.id}}"
+                      {{#if (sjc-eq char.id (lookup ../spelljammer.crewAssignments.gunners 2))}}selected{{/if}}>
+                {{char.name}}
+              </option>
+            {{/each}}
+          </select>
+        </div>
+        {{!-- Gunner 4 --}}
+        <div class="gunner-slot">
+          <label>Gunner 4:</label>
+          <select data-action="assignCrew" data-role="gunner" data-gunner-index="3" class="crew-select">
+            <option value="">-- Select Gunner --</option>
+            {{#each spelljammer.availableCharacters as |char|}}
+              <option value="{{char.id}}"
+                      {{#if (sjc-eq char.id (lookup ../spelljammer.crewAssignments.gunners 3))}}selected{{/if}}>
+                {{char.name}}
+              </option>
+            {{/each}}
+          </select>
+        </div>
+      </div>
+      <p class="role-desc">Operate ship weapons, assign to specific weapon systems</p>
+    </div>
+  </div>
+
+  {{!-- Quick Reference --}}
+  <div class="crew-reference">
+    <details>
+      <summary><i class="fas fa-book"></i> Crew Role Quick Reference</summary>
+      <div class="reference-content">
+        <div class="reference-item">
+          <strong>Captain:</strong>
+          Rolls ship initiative, issues commands at combat start, can grapple ships, and call boarding parties.
+        </div>
+        <div class="reference-item">
+          <strong>Helmsman:</strong>
+          Controls acceleration/deceleration, can Overdrive (3x accel) or Emergency Brake (3x decel), uses spell slots for Evade and Jamming maneuvers.
+        </div>
+        <div class="reference-item">
+          <strong>Gunner:</strong>
+          Fires ship weapons using DEX + Proficiency. Weapons are treated as heavy, loading, two-handed ranged weapons.
+        </div>
+        <div class="reference-item">
+          <strong>Boatswain:</strong>
+          Allocates power charges (equal to proficiency) to ship modules each turn. Can overclock with spell slots.
+        </div>
+      </div>
+    </details>
+  </div>
+</section>

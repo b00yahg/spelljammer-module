@@ -1,0 +1,129 @@
+{{!-- Captain Station --}}
+<section class="station captain-station">
+  <div class="station-header">
+    <span class="role-badge captain">CAPTAIN</span>
+    <h2 class="station-title">
+      <i class="fas fa-crown"></i> Captain's Station
+    </h2>
+  </div>
+
+  {{!-- Assigned Crew Member --}}
+  <div class="crew-assignment-display">
+    {{#if spelljammer.resolvedCrew.captain}}
+      <div class="assigned-crew" data-action="openCharacterSheet" data-actor-id="{{spelljammer.resolvedCrew.captain.id}}">
+        <img src="{{spelljammer.resolvedCrew.captain.img}}" alt="{{spelljammer.resolvedCrew.captain.name}}" class="crew-portrait" />
+        <div class="crew-info">
+          <span class="crew-name">{{spelljammer.resolvedCrew.captain.name}}</span>
+          <span class="crew-stats">
+            CHA {{sjc-formatModifier spelljammer.resolvedCrew.captain.chaMod}} |
+            Prof +{{spelljammer.resolvedCrew.captain.proficiency}}
+          </span>
+        </div>
+        <button type="button" class="remove-crew" data-action="removeCrew" data-role="captain">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    {{else}}
+      <div class="no-crew">
+        <i class="fas fa-user-plus"></i>
+        <span>No Captain Assigned</span>
+      </div>
+    {{/if}}
+  </div>
+
+  {{!-- Initiative --}}
+  <div class="ability-section initiative-section">
+    <h3 class="section-subtitle">Ship Initiative</h3>
+    <div class="initiative-row">
+      <button type="button" class="roll-button" data-action="rollInitiative">
+        <i class="fas fa-dice-d20"></i> Roll Initiative
+      </button>
+      {{#if spelljammer.resolvedCrew.captain}}
+        <span class="modifier-display">
+          {{sjc-formatModifier (sjc-multiply spelljammer.resolvedCrew.captain.chaMod 1)}}
+          + {{spelljammer.resolvedCrew.captain.proficiency}}
+        </span>
+      {{/if}}
+    </div>
+  </div>
+
+  {{!-- Captain's Commands --}}
+  <div class="ability-section commands-section">
+    <h3 class="section-subtitle">Captain's Command</h3>
+    <p class="ability-desc">At the beginning of combat, select one command:</p>
+
+    <div class="command-options">
+      <label class="command-option {{#if (sjc-eq spelljammer.captainCommand 'gunner')}}selected{{/if}}">
+        <input type="radio" name="spelljammer.captainCommand" value="gunner"
+               data-action="selectCommand" data-command="gunner"
+               {{#if (sjc-eq spelljammer.captainCommand 'gunner')}}checked{{/if}} />
+        <div class="command-content">
+          <strong>Offensive Order</strong>
+          <span>Allow a Gunner to make an additional weapon attack</span>
+        </div>
+      </label>
+
+      <label class="command-option {{#if (sjc-eq spelljammer.captainCommand 'boatswain')}}selected{{/if}}">
+        <input type="radio" name="spelljammer.captainCommand" value="boatswain"
+               data-action="selectCommand" data-command="boatswain"
+               {{#if (sjc-eq spelljammer.captainCommand 'boatswain')}}checked{{/if}} />
+        <div class="command-content">
+          <strong>Engineering Order</strong>
+          <span>Enable the Boatswain to allocate +1 power charge</span>
+        </div>
+      </label>
+
+      <label class="command-option {{#if (sjc-eq spelljammer.captainCommand 'helmsman')}}selected{{/if}}">
+        <input type="radio" name="spelljammer.captainCommand" value="helmsman"
+               data-action="selectCommand" data-command="helmsman"
+               {{#if (sjc-eq spelljammer.captainCommand 'helmsman')}}checked{{/if}} />
+        <div class="command-content">
+          <strong>Tactical Order</strong>
+          <span>Grant the Helmsman advantage on Overdrive/Emergency Brake checks</span>
+        </div>
+      </label>
+    </div>
+  </div>
+
+  {{!-- Special Actions --}}
+  <div class="ability-section actions-section">
+    <h3 class="section-subtitle">Special Actions</h3>
+
+    <div class="ability-item">
+      <div class="ability-header">
+        <span class="ability-name">Grappling Ropes</span>
+        <button type="button" class="roll-button small" data-action="rollGrapple">
+          <i class="fas fa-dice-d20"></i> Roll
+        </button>
+      </div>
+      <p class="ability-desc">
+        When within 5 feet of another vessel, make a Charisma (Vehicles) check
+        {{#if spelljammer.resolvedCrew.captain}}
+          (<strong>{{sjc-formatModifier spelljammer.resolvedCrew.captain.chaMod}}</strong>)
+        {{/if}}
+        contested by the opposing Captain (DC 10 if no Captain). On success, both ships are grappled together.
+      </p>
+    </div>
+
+    <div class="ability-item">
+      <div class="ability-header">
+        <span class="ability-name">To Me, Ocean Court!</span>
+        <button type="button" class="action-button small" data-action="useToMe">
+          <i class="fas fa-users"></i> Use
+        </button>
+      </div>
+      <p class="ability-desc">
+        Call a boarding/defense party. Crew members who haven't taken their turn are teleported to your position and leave their bridge roles.
+      </p>
+    </div>
+
+    <div class="ability-item">
+      <div class="ability-header">
+        <span class="ability-name">Hailing</span>
+      </div>
+      <p class="ability-desc">
+        You can hail other vessels, functioning as a <em>Sending</em> spell to communicate with another ship's Captain.
+      </p>
+    </div>
+  </div>
+</section>

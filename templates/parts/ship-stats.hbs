@@ -1,0 +1,74 @@
+{{!-- Ship Stats Header --}}
+<header class="sheet-header spelljammer-header">
+  <div class="header-left">
+    <img class="profile-img" src="{{actor.img}}" alt="{{actor.name}}" />
+    <div class="header-info">
+      <h1 class="ship-name">
+        <input type="text" name="name" value="{{actor.name}}" placeholder="Ship Name" />
+      </h1>
+      <div class="ship-class">{{actor.system.vehicleType}} - Spelljammer Vessel</div>
+    </div>
+  </div>
+
+  <div class="header-stats">
+    {{!-- Armor Class --}}
+    <div class="stat-block ac">
+      <label class="stat-label">AC</label>
+      <div class="stat-value">
+        <input type="number" name="system.attributes.ac.flat" value="{{actor.system.attributes.ac.flat}}" />
+      </div>
+    </div>
+
+    {{!-- Hull Points --}}
+    <div class="stat-block hp">
+      <label class="stat-label">Hull Points</label>
+      <div class="stat-value hp-display">
+        <input type="number" name="system.attributes.hp.value" value="{{actor.system.attributes.hp.value}}" class="hp-current" />
+        <span class="hp-separator">/</span>
+        <input type="number" name="system.attributes.hp.max" value="{{actor.system.attributes.hp.max}}" class="hp-max" />
+      </div>
+    </div>
+
+    {{!-- Temp HP --}}
+    <div class="stat-block temp-hp">
+      <label class="stat-label">Temp HP</label>
+      <div class="stat-value">
+        <input type="number" name="system.attributes.hp.temp" value="{{actor.system.attributes.hp.temp}}" min="0" />
+      </div>
+    </div>
+
+    {{!-- Velocity --}}
+    <div class="stat-block velocity">
+      <label class="stat-label">Velocity</label>
+      <div class="stat-value velocity-display">
+        <input type="number" name="spelljammer.velocity.current"
+               value="{{spelljammer.velocity.current}}"
+               data-action="updateVelocity" data-field="current" />
+        <span class="velocity-unit">ft/round</span>
+      </div>
+    </div>
+
+    {{!-- Direction --}}
+    <div class="stat-block direction">
+      <label class="stat-label">Direction</label>
+      <div class="stat-value">
+        <select name="spelljammer.velocity.direction"
+                data-action="updateVelocity" data-field="direction">
+          {{#each spelljammer.directions as |dir|}}
+            <option value="{{dir}}" {{#if (sjc-eq dir ../spelljammer.velocity.direction)}}selected{{/if}}>{{dir}}</option>
+          {{/each}}
+        </select>
+      </div>
+    </div>
+
+    {{!-- Air Supply --}}
+    <div class="stat-block air-supply">
+      <label class="stat-label">Air (Days)</label>
+      <div class="stat-value">
+        <input type="number" name="spelljammer.airSupply.current" value="{{spelljammer.airSupply.current}}" />
+        <span class="air-separator">/</span>
+        <input type="number" name="spelljammer.airSupply.max" value="{{spelljammer.airSupply.max}}" class="air-max" />
+      </div>
+    </div>
+  </div>
+</header>

@@ -1,0 +1,182 @@
+{{!-- Helmsman Station --}}
+<section class="station helmsman-station">
+  <div class="station-header">
+    <span class="role-badge helmsman">HELMSMAN</span>
+    <h2 class="station-title">
+      <i class="fas fa-compass"></i> Helm Control
+    </h2>
+  </div>
+
+  {{!-- Assigned Crew Member --}}
+  <div class="crew-assignment-display">
+    {{#if spelljammer.resolvedCrew.helmsman}}
+      <div class="assigned-crew" data-action="openCharacterSheet" data-actor-id="{{spelljammer.resolvedCrew.helmsman.id}}">
+        <img src="{{spelljammer.resolvedCrew.helmsman.img}}" alt="{{spelljammer.resolvedCrew.helmsman.name}}" class="crew-portrait" />
+        <div class="crew-info">
+          <span class="crew-name">{{spelljammer.resolvedCrew.helmsman.name}}</span>
+          <span class="crew-stats">
+            WIS {{sjc-formatModifier spelljammer.resolvedCrew.helmsman.wisMod}} |
+            Prof +{{spelljammer.resolvedCrew.helmsman.proficiency}}
+          </span>
+        </div>
+        <button type="button" class="remove-crew" data-action="removeCrew" data-role="helmsman">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    {{else}}
+      <div class="no-crew">
+        <i class="fas fa-user-plus"></i>
+        <span>No Helmsman Assigned</span>
+      </div>
+    {{/if}}
+  </div>
+
+  {{!-- Movement Details --}}
+  <div class="ability-section movement-section">
+    <h3 class="section-subtitle">Movement Attributes</h3>
+    <div class="movement-grid">
+      <div class="movement-item">
+        <label>Max Acceleration</label>
+        <div class="movement-value">
+          <input type="number" name="spelljammer.velocity.maxAcceleration"
+                 value="{{spelljammer.velocity.maxAcceleration}}" />
+          <span class="unit">ft/round</span>
+        </div>
+      </div>
+      <div class="movement-item">
+        <label>Max Deceleration</label>
+        <div class="movement-value">
+          <input type="number" name="spelljammer.velocity.maxDeceleration"
+                 value="{{spelljammer.velocity.maxDeceleration}}" />
+          <span class="unit">ft/round</span>
+        </div>
+      </div>
+      <div class="movement-item full-width">
+        <label>Overdrive/Emergency Brake DC</label>
+        <div class="dc-display">
+          <span class="dc-value">DC {{spelljammer.overdriveDC}}</span>
+          <span class="dc-note">(Based on current speed: {{spelljammer.velocity.current}} ft)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {{!-- DC Reference Table --}}
+  <div class="ability-section dc-table-section">
+    <details class="dc-table-toggle">
+      <summary>Speed DC Reference</summary>
+      <table class="dc-reference-table">
+        <thead>
+          <tr>
+            <th>Speed</th>
+            <th>DC</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>0-100 ft</td><td>0</td></tr>
+          <tr><td>200-300 ft</td><td>5</td></tr>
+          <tr><td>400-500 ft</td><td>10</td></tr>
+          <tr><td>600-700 ft</td><td>15</td></tr>
+          <tr><td>800-900 ft</td><td>20</td></tr>
+        </tbody>
+      </table>
+    </details>
+  </div>
+
+  {{!-- Special Actions --}}
+  <div class="ability-section actions-section">
+    <h3 class="section-subtitle">Special Actions</h3>
+
+    <div class="ability-item">
+      <div class="ability-header">
+        <span class="ability-name">Overdrive</span>
+        <button type="button" class="roll-button small" data-action="rollOverdrive">
+          <i class="fas fa-dice-d20"></i> Roll
+        </button>
+      </div>
+      <p class="ability-desc">
+        Triple maximum acceleration (<strong>{{sjc-multiply spelljammer.velocity.maxAcceleration 3}} ft</strong>).
+        Requires a Wisdom (Vehicles) check vs DC {{spelljammer.overdriveDC}}.
+        On failure, acceleration is zero next turn.
+        {{#if (sjc-eq spelljammer.captainCommand 'helmsman')}}
+          <em class="bonus-note">(Rolling with advantage from Captain's Tactical Order!)</em>
+        {{/if}}
+      </p>
+    </div>
+
+    <div class="ability-item">
+      <div class="ability-header">
+        <span class="ability-name">Emergency Brake</span>
+        <button type="button" class="roll-button small" data-action="rollEmergencyBrake">
+          <i class="fas fa-dice-d20"></i> Roll
+        </button>
+      </div>
+      <p class="ability-desc">
+        Triple maximum deceleration (<strong>{{sjc-multiply spelljammer.velocity.maxDeceleration 3}} ft</strong>).
+        Requires a Wisdom (Vehicles) check vs DC {{spelljammer.overdriveDC}}.
+        On failure, the ship takes 2d6 force damage.
+        {{#if (sjc-eq spelljammer.captainCommand 'helmsman')}}
+          <em class="bonus-note">(Rolling with advantage from Captain's Tactical Order!)</em>
+        {{/if}}
+      </p>
+    </div>
+  </div>
+
+  {{!-- Maneuvers --}}
+  <div class="ability-section maneuvers-section">
+    <h3 class="section-subtitle">Maneuvers</h3>
+
+    <div class="ability-item maneuver">
+      <div class="ability-header">
+        <span class="ability-name">Evade</span>
+        <span class="spell-level">1st-level</span>
+        <button type="button" class="action-button small" data-action="useEvade">
+          <i class="fas fa-shield-alt"></i> Use
+        </button>
+      </div>
+      <p class="ability-desc">
+        <strong>Reaction:</strong> Expend a 1st-level spell slot. Until your next turn, add
+        {{#if spelljammer.resolvedCrew.helmsman}}
+          <strong>+{{spelljammer.resolvedCrew.helmsman.proficiency}}</strong>
+        {{else}}
+          proficiency bonus
+        {{/if}}
+        to the ship's AC or Wisdom (Vehicle) checks to avoid collisions.
+        <em>+2 per spell level above 1st.</em>
+      </p>
+    </div>
+
+    <div class="ability-item maneuver">
+      <div class="ability-header">
+        <span class="ability-name">Jamming</span>
+        <span class="spell-level">3rd-level</span>
+        <button type="button" class="action-button small" data-action="useJamming">
+          <i class="fas fa-link"></i> Use
+        </button>
+      </div>
+      <p class="ability-desc">
+        Expend a 3rd-level spell slot to attune to a target vessel within 5 feet.
+        For 1 minute, automatically match the target's speed, acceleration, and deceleration
+        without Overdrive/Emergency Brake checks.
+      </p>
+    </div>
+  </div>
+
+  {{!-- Collision Reference --}}
+  <div class="ability-section collision-section">
+    <h3 class="section-subtitle">Collision Damage</h3>
+    <div class="collision-grid">
+      {{#each spelljammer.collisionDamage as |damage size|}}
+        <div class="collision-item">
+          <span class="size-label">{{size}}</span>
+          <button type="button" class="roll-button tiny" data-action="rollCollisionDamage" data-size="{{size}}">
+            {{damage}}
+          </button>
+        </div>
+      {{/each}}
+    </div>
+    <p class="collision-note">
+      <strong>Grazing:</strong> If clipping only a corner, the Helmsman can attempt a Wisdom (Vehicle) check to avoid damage.
+    </p>
+  </div>
+</section>

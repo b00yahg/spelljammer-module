@@ -1,0 +1,196 @@
+{{!-- Gunner Station --}}
+<section class="station gunner-station">
+  <div class="station-header">
+    <span class="role-badge gunner">GUNNER</span>
+    <h2 class="station-title">
+      <i class="fas fa-crosshairs"></i> Weapons Control
+    </h2>
+  </div>
+
+  {{!-- Assigned Gunners --}}
+  <div class="gunner-assignments">
+    <h3 class="section-subtitle">Assigned Gunners</h3>
+    <div class="gunner-list">
+      {{#each spelljammer.resolvedCrew.gunners as |gunner index|}}
+        <div class="assigned-crew gunner-slot" data-action="openCharacterSheet" data-actor-id="{{gunner.id}}">
+          <span class="gunner-number">{{math index "+" 1}}</span>
+          <img src="{{gunner.img}}" alt="{{gunner.name}}" class="crew-portrait small" />
+          <div class="crew-info">
+            <span class="crew-name">{{gunner.name}}</span>
+            <span class="crew-stats">
+              DEX {{sjc-formatModifier gunner.dexMod}} |
+              Prof +{{gunner.proficiency}}
+            </span>
+          </div>
+          <button type="button" class="remove-crew" data-action="removeCrew" data-role="gunner" data-gunner-index="{{index}}">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      {{else}}
+        <div class="no-crew">
+          <i class="fas fa-user-plus"></i>
+          <span>No Gunners Assigned</span>
+        </div>
+      {{/each}}
+    </div>
+  </div>
+
+  {{!-- Weapon Proficiency Info --}}
+  <div class="ability-section proficiency-section">
+    <div class="ability-item">
+      <span class="ability-name">Weapon Proficiency</span>
+      <p class="ability-desc">
+        Add DEX modifier + proficiency bonus to attack and damage rolls.
+        Ship weapons are treated as heavy, loading, two-handed ranged weapons.
+      </p>
+    </div>
+    {{#if (sjc-eq spelljammer.captainCommand 'gunner')}}
+      <div class="captain-bonus">
+        <i class="fas fa-star"></i>
+        <span>Captain's Offensive Order: One Gunner may make an additional attack this turn!</span>
+      </div>
+    {{/if}}
+  </div>
+
+  {{!-- Weapons List --}}
+  <div class="ability-section weapons-section">
+    <div class="weapons-header">
+      <h3 class="section-subtitle">Ship Weapons</h3>
+      <button type="button" class="add-button" data-action="addWeapon">
+        <i class="fas fa-plus"></i> Add Weapon
+      </button>
+    </div>
+
+    <div class="weapons-table">
+      <div class="weapon-row header">
+        <div class="weapon-col name">Weapon</div>
+        <div class="weapon-col range">Range</div>
+        <div class="weapon-col attack">To Hit</div>
+        <div class="weapon-col damage">Damage</div>
+        <div class="weapon-col position">Position</div>
+        <div class="weapon-col hp">HP</div>
+        <div class="weapon-col gunner">Gunner</div>
+        <div class="weapon-col actions">Actions</div>
+      </div>
+
+      {{#each spelljammer.weaponsWithStats as |weapon|}}
+        <div class="weapon-row {{#if (lte weapon.hp 0)}}disabled{{/if}}">
+          <div class="weapon-col name">
+            <input type="text" name="spelljammer.weapons.{{weapon.index}}.name"
+                   value="{{weapon.name}}" class="weapon-name-input" />
+            {{#if weapon.properties.length}}
+              <div class="weapon-properties">
+                {{#each weapon.properties as |prop|}}
+                  <span class="property-tag">{{prop}}</span>
+                {{/each}}
+              </div>
+            {{/if}}
+          </div>
+          <div class="weapon-col range">
+            <input type="text" name="spelljammer.weapons.{{weapon.index}}.range"
+                   value="{{weapon.range}}" class="weapon-range-input" />
+          </div>
+          <div class="weapon-col attack">
+            <span class="attack-bonus">{{weapon.attackBonusFormatted}}</span>
+          </div>
+          <div class="weapon-col damage">
+            <input type="text" name="spelljammer.weapons.{{weapon.index}}.damage"
+                   value="{{weapon.damage}}" class="weapon-damage-input" />
+            <select name="spelljammer.weapons.{{weapon.index}}.damageType" class="damage-type-select">
+              <option value="bludgeoning" {{#if (sjc-eq weapon.damageType "bludgeoning")}}selected{{/if}}>bludg.</option>
+              <option value="piercing" {{#if (sjc-eq weapon.damageType "piercing")}}selected{{/if}}>pierc.</option>
+              <option value="slashing" {{#if (sjc-eq weapon.damageType "slashing")}}selected{{/if}}>slash.</option>
+              <option value="fire" {{#if (sjc-eq weapon.damageType "fire")}}selected{{/if}}>fire</option>
+              <option value="cold" {{#if (sjc-eq weapon.damageType "cold")}}selected{{/if}}>cold</option>
+              <option value="lightning" {{#if (sjc-eq weapon.damageType "lightning")}}selected{{/if}}>lightning</option>
+              <option value="radiant" {{#if (sjc-eq weapon.damageType "radiant")}}selected{{/if}}>radiant</option>
+              <option value="necrotic" {{#if (sjc-eq weapon.damageType "necrotic")}}selected{{/if}}>necrotic</option>
+              <option value="force" {{#if (sjc-eq weapon.damageType "force")}}selected{{/if}}>force</option>
+            </select>
+          </div>
+          <div class="weapon-col position">
+            <select name="spelljammer.weapons.{{weapon.index}}.position" class="position-select">
+              <option value="bow" {{#if (sjc-eq weapon.position "bow")}}selected{{/if}}>Bow (45°)</option>
+              <option value="stern" {{#if (sjc-eq weapon.position "stern")}}selected{{/if}}>Stern (45°)</option>
+              <option value="port" {{#if (sjc-eq weapon.position "port")}}selected{{/if}}>Port (90°)</option>
+              <option value="starboard" {{#if (sjc-eq weapon.position "starboard")}}selected{{/if}}>Starboard (90°)</option>
+              <option value="broadside" {{#if (sjc-eq weapon.position "broadside")}}selected{{/if}}>Broadside (90°)</option>
+            </select>
+          </div>
+          <div class="weapon-col hp">
+            <input type="number" name="spelljammer.weapons.{{weapon.index}}.hp"
+                   value="{{weapon.hp}}" min="0" max="{{weapon.maxHp}}" class="hp-input" />
+            <span class="hp-max">/{{weapon.maxHp}}</span>
+          </div>
+          <div class="weapon-col gunner">
+            <select data-action="assignWeaponGunner" data-weapon-index="{{weapon.index}}" class="gunner-select">
+              <option value="">Unassigned</option>
+              {{#each ../spelljammer.resolvedCrew.gunners as |g gIndex|}}
+                <option value="{{gIndex}}" {{#if (sjc-eq gIndex ../weapon.assignedGunner)}}selected{{/if}}>
+                  {{g.name}}
+                </option>
+              {{/each}}
+            </select>
+          </div>
+          <div class="weapon-col actions">
+            <button type="button" class="roll-button tiny"
+                    data-action="rollWeaponAttack" data-weapon-index="{{weapon.index}}"
+                    {{#if (lte weapon.hp 0)}}disabled{{/if}}>
+              <i class="fas fa-dice-d20"></i>
+            </button>
+            <button type="button" class="delete-button tiny" data-action="deleteWeapon" data-weapon-index="{{weapon.index}}">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      {{else}}
+        <div class="no-weapons">
+          <p>No weapons installed. Click "Add Weapon" to add ship weapons.</p>
+        </div>
+      {{/each}}
+    </div>
+
+    {{!-- Weapons Array Bonus Notice --}}
+    {{#if spelljammer.powerModules.weaponsArray.active}}
+      <div class="power-bonus-notice">
+        <i class="fas fa-bolt"></i>
+        <span>Weapons Array Active: +1d6 damage to all weapon attacks!</span>
+      </div>
+    {{/if}}
+  </div>
+
+  {{!-- Special Actions --}}
+  <div class="ability-section actions-section">
+    <h3 class="section-subtitle">Special Actions</h3>
+
+    <div class="ability-item">
+      <span class="ability-name">Switch Weapons</span>
+      <span class="action-type">Bonus Action</span>
+      <p class="ability-desc">Switch between different weapon systems.</p>
+    </div>
+
+    <div class="ability-item">
+      <span class="ability-name">Trigger on the Pulse</span>
+      <span class="action-type">Ready Action</span>
+      <p class="ability-desc">Ready a ship weapon attack to fire at a specific trigger.</p>
+    </div>
+  </div>
+
+  {{!-- Weapon Properties Reference --}}
+  <div class="ability-section properties-reference">
+    <details>
+      <summary>Weapon Properties Reference</summary>
+      <div class="properties-list">
+        <div class="property-item">
+          <strong>Utilize:</strong> Once fired, requires another action to charge before firing again.
+        </div>
+        <div class="property-item">
+          <strong>Automatic:</strong> May make two attacks at disadvantage instead of one normal attack.
+        </div>
+        <div class="property-item">
+          <strong>Crew-Operated:</strong> Requires two crew members to operate (only one needs Gunner proficiency).
+        </div>
+      </div>
+    </details>
+  </div>
+</section>

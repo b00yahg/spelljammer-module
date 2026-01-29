@@ -1,0 +1,42 @@
+{
+  "id": "spelljammer-ship-combat",
+  "title": "Spelljammer Ship Combat",
+  "description": "Custom ship combat mechanics for D&D 5e Spelljammer campaigns, featuring crew roles (Captain, Helmsman, Gunner, Boatswain), power module systems, and vector-based movement.",
+  "version": "1.0.0",
+  "authors": [
+    {
+      "name": "Ocean Court Express"
+    }
+  ],
+  "compatibility": {
+    "minimum": "13",
+    "verified": "13"
+  },
+  "relationships": {
+    "systems": [
+      {
+        "id": "dnd5e",
+        "type": "system",
+        "compatibility": {
+          "minimum": "5.0.0",
+          "verified": "5.2.0"
+        }
+      }
+    ]
+  },
+  "esmodules": [
+    "spelljammer.mjs"
+  ],
+  "styles": [
+    "styles/spelljammer.css"
+  ],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ],
+  "socket": true,
+  "flags": {}
+}

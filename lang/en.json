@@ -1,0 +1,54 @@
+{
+  "SPELLJAMMER": {
+    "SheetTitle": "Spelljammer Ship Sheet",
+    "Roles": {
+      "Captain": "Captain",
+      "Helmsman": "Helmsman",
+      "Gunner": "Gunner",
+      "Boatswain": "Boatswain"
+    },
+    "Stats": {
+      "AC": "Armor Class",
+      "HP": "Hull Points",
+      "TempHP": "Temporary HP",
+      "Velocity": "Velocity",
+      "Direction": "Direction",
+      "AirSupply": "Air Supply"
+    },
+    "Directions": {
+      "N": "North",
+      "NE": "Northeast",
+      "E": "East",
+      "SE": "Southeast",
+      "S": "South",
+      "SW": "Southwest",
+      "W": "West",
+      "NW": "Northwest"
+    },
+    "PowerModules": {
+      "WeaponsArray": "Weapons Array",
+      "DeflectorGrid": "Deflector Grid",
+      "ThrusterOverride": "Thruster Override",
+      "HullReinforcement": "Hull Reinforcement",
+      "SystemRestoration": "System Restoration",
+      "WarpCoreCharge": "Warp Core Charge"
+    },
+    "Actions": {
+      "RollInitiative": "Roll Initiative",
+      "RollGrapple": "Roll Grapple",
+      "RollOverdrive": "Roll Overdrive",
+      "RollEmergencyBrake": "Roll Emergency Brake",
+      "RollAttack": "Roll Attack",
+      "UseEvade": "Use Evade",
+      "UseJamming": "Use Jamming",
+      "UseArcaneOverclock": "Arcane Overclock",
+      "UseEmergencyHotfix": "Emergency Hotfix"
+    },
+    "Settings": {
+      "DefaultVelocity": "Default Starting Velocity",
+      "DefaultVelocityHint": "The default starting velocity for ships entering combat (in feet per round)",
+      "UseY2KTheme": "Use Y2K Theme",
+      "UseY2KThemeHint": "Enable the retro Y2K-inspired visual theme"
+    }
+  }
+}

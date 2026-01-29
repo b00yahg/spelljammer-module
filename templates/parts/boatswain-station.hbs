@@ -1,0 +1,172 @@
+{{!-- Boatswain Station --}}
+<section class="station boatswain-station">
+  <div class="station-header">
+    <span class="role-badge boatswain">BOATSWAIN</span>
+    <h2 class="station-title">
+      <i class="fas fa-bolt"></i> Power Systems
+    </h2>
+  </div>
+
+  {{!-- Assigned Crew Member --}}
+  <div class="crew-assignment-display">
+    {{#if spelljammer.resolvedCrew.boatswain}}
+      <div class="assigned-crew" data-action="openCharacterSheet" data-actor-id="{{spelljammer.resolvedCrew.boatswain.id}}">
+        <img src="{{spelljammer.resolvedCrew.boatswain.img}}" alt="{{spelljammer.resolvedCrew.boatswain.name}}" class="crew-portrait" />
+        <div class="crew-info">
+          <span class="crew-name">{{spelljammer.resolvedCrew.boatswain.name}}</span>
+          <span class="crew-stats">
+            Prof +{{spelljammer.resolvedCrew.boatswain.proficiency}} (Power Charges)
+          </span>
+        </div>
+        <button type="button" class="remove-crew" data-action="removeCrew" data-role="boatswain">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    {{else}}
+      <div class="no-crew">
+        <i class="fas fa-user-plus"></i>
+        <span>No Boatswain Assigned</span>
+      </div>
+    {{/if}}
+  </div>
+
+  {{!-- Power Charge Counter --}}
+  <div class="power-charge-counter">
+    <div class="charge-display">
+      <span class="charge-label">Power Charges:</span>
+      <span class="charge-used">{{spelljammer.usedPowerCharges}}</span>
+      <span class="charge-separator">/</span>
+      <span class="charge-max">{{spelljammer.maxPowerCharges}}</span>
+      {{#if (sjc-eq spelljammer.captainCommand 'boatswain')}}
+        <span class="bonus-charge">+1</span>
+        <span class="bonus-note">(Captain's Order)</span>
+      {{/if}}
+    </div>
+    <div class="charge-bar">
+      <div class="charge-fill" style="width: {{sjc-multiply (math spelljammer.usedPowerCharges "/" spelljammer.maxPowerCharges) 100}}%"></div>
+    </div>
+  </div>
+
+  {{!-- Power Modules --}}
+  <div class="ability-section modules-section">
+    <h3 class="section-subtitle">Power Modules</h3>
+
+    <div class="power-modules-grid">
+      {{#each spelljammer.powerModulesWithDefs as |module|}}
+        <div class="power-module {{#if module.active}}active{{/if}} {{#if module.disabled}}disabled{{/if}}"
+             data-action="toggleModule" data-module-id="{{module.id}}">
+          <div class="module-header">
+            <span class="module-name">{{module.name}}</span>
+            <span class="module-cost">{{module.cost}} {{#if (sjc-eq module.cost 1)}}charge{{else}}charges{{/if}}</span>
+          </div>
+          <p class="module-desc">{{module.description}}</p>
+          <div class="module-footer">
+            <div class="module-hp">
+              <label>HP:</label>
+              <input type="number" name="spelljammer.powerModules.{{module.id}}.hp"
+                     value="{{module.hp}}" min="0" max="{{module.maxHp}}"
+                     class="module-hp-input" onclick="event.stopPropagation();" />
+              <span class="hp-max">/{{module.maxHp}}</span>
+            </div>
+            <div class="module-toggle">
+              <span class="toggle-label">{{#if module.active}}ON{{else}}OFF{{/if}}</span>
+              <div class="toggle-switch {{#if module.active}}on{{/if}}">
+                <div class="toggle-slider"></div>
+              </div>
+            </div>
+          </div>
+          {{#if module.disabled}}
+            <div class="disabled-overlay">
+              <i class="fas fa-exclamation-triangle"></i>
+              <span>DAMAGED</span>
+            </div>
+          {{/if}}
+        </div>
+      {{/each}}
+    </div>
+  </div>
+
+  {{!-- Warp Core Progress --}}
+  {{#if spelljammer.powerModules.warpCoreCharge.active}}
+    <div class="warp-core-progress">
+      <h4>Warp Core Charging</h4>
+      <div class="warp-progress-bar">
+        {{#each (array 1 2 3) as |turn|}}
+          <div class="warp-segment {{#if (lte turn ../spelljammer.warpChargeProgress)}}charged{{/if}}">
+            Turn {{turn}}
+          </div>
+        {{/each}}
+      </div>
+      {{#if (gte spelljammer.warpChargeProgress 3)}}
+        <div class="warp-ready">
+          <i class="fas fa-rocket"></i>
+          <span>WARP JUMP READY!</span>
+        </div>
+      {{/if}}
+    </div>
+  {{/if}}
+
+  {{!-- Special Actions --}}
+  <div class="ability-section actions-section">
+    <h3 class="section-subtitle">Special Actions</h3>
+
+    <div class="ability-item">
+      <div class="ability-header">
+        <span class="ability-name">Arcane Overclock</span>
+        <span class="action-type">Action</span>
+        <button type="button" class="action-button small" data-action="rollArcaneOverclock">
+          <i class="fas fa-magic"></i> Use
+        </button>
+      </div>
+      <p class="ability-desc">
+        Expend a spell slot to gain additional power charges equal to the spell slot level for this turn only.
+      </p>
+    </div>
+
+    <div class="ability-item">
+      <div class="ability-header">
+        <span class="ability-name">Emergency Hotfix</span>
+        <span class="action-type">Reaction</span>
+        <button type="button" class="action-button small" data-action="useEmergencyHotfix"
+                {{#unless (lte actor.system.attributes.hp.value (math actor.system.attributes.hp.max "/" 2))}}disabled{{/unless}}>
+          <i class="fas fa-wrench"></i> Use
+        </button>
+      </div>
+      <p class="ability-desc">
+        When the ship drops below half HP, immediately reallocate 1 power charge as a reaction.
+        {{#if (lte actor.system.attributes.hp.value (math actor.system.attributes.hp.max "/" 2))}}
+          <em class="available-note">(Available now - ship is below half HP!)</em>
+        {{/if}}
+      </p>
+    </div>
+  </div>
+
+  {{!-- Module Effects Summary --}}
+  <div class="ability-section effects-summary">
+    <h3 class="section-subtitle">Active Effects</h3>
+    <div class="active-effects-list">
+      {{#each spelljammer.powerModulesWithDefs as |module|}}
+        {{#if module.active}}
+          <div class="active-effect {{module.id}}">
+            <i class="fas fa-check-circle"></i>
+            <span>{{module.name}}: {{module.description}}</span>
+          </div>
+        {{/if}}
+      {{else}}
+        <div class="no-effects">
+          <i class="fas fa-power-off"></i>
+          <span>No modules currently active</span>
+        </div>
+      {{/each}}
+    </div>
+  </div>
+
+  {{!-- Module Upgrades Note --}}
+  <div class="upgrades-note">
+    <i class="fas fa-info-circle"></i>
+    <p>
+      Additional modules can be acquired from <em>Spamazon</em> and added to your ship's systems.
+      New modules will appear in the power allocation options above.
+    </p>
+  </div>
+</section>
