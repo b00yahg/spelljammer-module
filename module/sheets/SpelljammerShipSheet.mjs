@@ -428,6 +428,23 @@ export class SpelljammerShipSheet extends ActorSheet {
     super._onChangeInput(event);
   }
 
+  /**
+   * Override _getSubmitData to handle missing form element gracefully
+   * @override
+   */
+  _getSubmitData(updateData = {}) {
+    // Try to get form data normally, but handle the case where form isn't ready
+    try {
+      if (!this.form) {
+        return updateData;
+      }
+      return super._getSubmitData(updateData);
+    } catch (err) {
+      console.warn("Spelljammer | Form submit data error (non-critical):", err.message);
+      return updateData;
+    }
+  }
+
   /** @override */
   activateListeners(html) {
     super.activateListeners(html);
@@ -530,10 +547,10 @@ export class SpelljammerShipSheet extends ActorSheet {
       const currentData = this.actor.getFlag(MODULE_ID, "") ?? {};
       const updatedData = foundry.utils.mergeObject(currentData, { crewAssignments: assignments });
 
-      // Use a single atomic update for the entire flag namespace
+      // Use a single atomic update, but prevent automatic re-render
       await this.actor.update({
         [`flags.${MODULE_ID}`]: updatedData
-      });
+      }, { render: false });
 
       console.log(`Spelljammer | Crew assignment updated. New assignments:`, assignments);
 
@@ -550,7 +567,8 @@ export class SpelljammerShipSheet extends ActorSheet {
         actorId: this.actor.id
       });
 
-      // Foundry automatically re-renders after actor.update(), no need to call render()
+      // Now manually re-render after update is complete
+      this.render(true);
     } catch (err) {
       console.error("Spelljammer | Error updating crew assignment:", err);
       ui.notifications.error("Failed to assign crew member!");
@@ -583,10 +601,10 @@ export class SpelljammerShipSheet extends ActorSheet {
     const currentData = this.actor.getFlag(MODULE_ID, "") ?? {};
     const updatedData = foundry.utils.mergeObject(currentData, { crewAssignments: assignments });
 
-    // Use a single atomic update
+    // Use a single atomic update, but prevent automatic re-render
     await this.actor.update({
       [`flags.${MODULE_ID}`]: updatedData
-    });
+    }, { render: false });
 
     // Notify other clients
     game.socket.emit(`module.${MODULE_ID}`, {
@@ -594,7 +612,8 @@ export class SpelljammerShipSheet extends ActorSheet {
       actorId: this.actor.id
     });
 
-    // Foundry automatically re-renders after actor.update()
+    // Now manually re-render after update is complete
+    this.render(true);
   }
 
   /* -------------------------------------------- */
@@ -1179,10 +1198,10 @@ export class SpelljammerShipSheet extends ActorSheet {
     const currentData = this.actor.getFlag(MODULE_ID, "") ?? {};
     const updatedData = foundry.utils.mergeObject(currentData, { crewAssignments: assignments });
 
-    // Use a single atomic update
+    // Use a single atomic update, but prevent automatic re-render
     await this.actor.update({
       [`flags.${MODULE_ID}`]: updatedData
-    });
+    }, { render: false });
 
     ui.notifications.info(`${actor.name} assigned as ${role.charAt(0).toUpperCase() + role.slice(1)}!`);
 
@@ -1192,7 +1211,8 @@ export class SpelljammerShipSheet extends ActorSheet {
       actorId: this.actor.id
     });
 
-    // Foundry automatically re-renders after actor.update()
+    // Now manually re-render after update is complete
+    this.render(true);
 
     return true;
   }
