@@ -1,0 +1,2639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oceans Court Express - Ship Character Sheet</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;700&family=Quantico:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Light mode variables - Subtle Y2K Inspired */
+            --primary: #5b8af9;
+            --secondary: #6a8cc4;
+            --accent: #ffb347;
+            --accent-purple: #9370db;
+            --accent-pink: #de7aad;
+            --accent-cyan: #50c2c2;
+            --light: #f8f8f8;
+            --dark: #333333;
+            --danger: #e74c3c;
+            --success: #2ecc71;
+            --warning: #f1c40f;
+            --background: #ffffff;
+            --text: #222222;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --border-color: rgba(91, 138, 249, 0.3);
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        [data-theme="dark"] {
+            --primary: #00ccff;
+            --secondary: #6633ff;
+            --accent: #33ff99;
+            --accent-purple: #bb33ff;
+            --accent-pink: #ff33aa;
+            --accent-cyan: #00eeff;
+            --light: #112233;
+            --dark: #eeeeff;
+            --danger: #ff3366;
+            --success: #00cc99;
+            --warning: #ffbb33;
+            --background: #001122;
+            --text: #ccddff;
+            --card-bg: rgba(10, 20, 40, 0.95);
+            --border-color: rgba(0, 204, 255, 0.5);
+            --shadow-color: rgba(0, 204, 255, 0.2);
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Exo 2', sans-serif; /* Base font for most content */
+        }
+    
+        /* Improved CRT effect that will cover the entire page */
+        body {
+            position: relative;
+            overflow-x: hidden; /* Prevent horizontal scrolling */
+            background-color: var(--background);
+            color: var(--text);
+        }
+        
+        body::before {
+          content: "";
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(to bottom, rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+          background-size: 100% 2px;
+          pointer-events: none;
+          z-index: 2000; /* Higher z-index to ensure it appears above everything */
+          animation: scanline 10s linear infinite;
+          opacity: 0.3;
+        }
+        
+        /* Add subtle screen flicker animation for CRT effect */
+        @keyframes flicker {
+          0% { opacity: 0.97; }
+          3% { opacity: 0.99; }
+          7% { opacity: 0.96; }
+          13% { opacity: 1; }
+          100% { opacity: 0.98; }
+        }
+        
+        .sheet-container {
+          position: relative;
+          animation: flicker 6s infinite;
+          box-shadow: 0 0 20px rgba(66, 220, 219, 0.2); /* Subtle glow for CRT look */
+        }
+        
+        .sheet-container {
+            position: relative;
+            filter: blur(0.4px);
+            border-radius: 10px;
+        }
+    
+        .sheet-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+    
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0.05;
+            width: 80%;
+            z-index: 0;
+            pointer-events: none;
+        }
+    
+        .sheet-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+    
+        .ship-name {
+          font-size: 2.5rem;
+          font-weight: bold;
+          text-transform: uppercase;
+          border-bottom: 2px solid var(--accent-cyan);
+          margin-bottom: 5px;
+          font-family: 'Quantico', sans-serif;
+          letter-spacing: 2px;
+          color: var(--accent-cyan);
+          text-shadow: 0 0 10px rgba(51, 204, 255, 0.5);
+        }
+    
+        .ship-name::after {
+            content: '|';
+            animation: blink 1s infinite step-end;
+            margin-left: 5px;
+            color: var(--accent-cyan);
+        }
+    
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+    
+        .ship-class {
+            font-size: 1.2rem;
+            color: var(--secondary);
+            font-style: italic;
+        }
+    
+        .save-container {
+            text-align: right;
+        }
+    
+        .save-btn {
+            background-color: var(--success);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+    
+        .save-btn:hover {
+            background-color: #4cae4c;
+            transform: translateY(-2px);
+            box-shadow: 0 0 10px var(--success);
+        }
+        
+        .crew-role-input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 5px;
+        }
+        
+        .upload-btn {
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            padding: 8px 12px; /* Increased padding */
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px; /* Increased font size */
+            transition: all 0.2s;
+            font-family: 'Exo 2', sans-serif;
+            font-weight: bold;
+            min-width: 150px; /* Set minimum width */
+            text-align: center;
+        }
+        
+        .upload-btn:hover {
+            background-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 0 10px currentColor;
+        }
+        
+        .captain-upload {
+            background-color: #6a1b9a;
+        }
+        
+        .helmsman-upload {
+            background-color: #0277bd;
+        }
+        
+        .gunner-upload {
+            background-color: #d32f2f;
+        }
+        
+        .boatswain-upload {
+            background-color: #388e3c;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--success);
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .notification.error {
+            background-color: var(--danger);
+        }
+        
+        .clear-btn {
+            background-color: var(--danger);
+            color: white;
+            border: none;
+            padding: 3px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            margin-left: 10px;
+        }
+        
+        .crew-role-stat {
+            font-size: 0.8rem;
+            color: var(--secondary);
+            margin-top: 5px;
+        }
+    
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 15px;
+            position: relative;
+            z-index: 1;
+            background-image: linear-gradient(rgba(0,204,255,0.05) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(0,204,255,0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+    
+        .section {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 15px;
+            border-top: 4px solid var(--primary);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            border-top-width: 4px;
+            box-shadow: 0 0 15px rgba(0, 204, 255, 0.1);
+        }
+    
+        .section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                var(--accent-cyan) 50%, 
+                transparent 100%);
+            opacity: 0.7;
+            animation: scanner 3s infinite;
+            z-index: 1;
+        }
+    
+        @keyframes scanner {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+    
+        .section-title {
+          font-size: 1.2rem;
+          font-weight: bold;
+          color: var(--accent-cyan);
+          margin-bottom: 10px;
+          display: flex;
+          align-items: center;
+          font-family: 'Quantico', sans-serif;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+        }
+    
+        .section-title i {
+            margin-right: 8px;
+            color: var(--accent);
+            text-shadow: 0 0 5px var(--accent);
+        }
+    
+        .captain .section-title i {
+            color: var(--accent-purple);
+        }
+    
+        .helmsman .section-title i {
+            color: var(--accent-cyan);
+        }
+    
+        .gunner .section-title i {
+            color: var(--accent-pink);
+        }
+    
+        .boatswain .section-title i {
+            color: var(--accent);
+        }
+    
+        .ship-stats {
+            grid-column: span 12;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            background: linear-gradient(135deg, rgba(0,0,0,0) 0%, rgba(0, 204, 255, 0.05) 100%);
+        }
+    
+        .stats-container {
+            position: relative; /* Changed from sticky */
+            z-index: 100;
+            background-color: var(--card-bg);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 0 25px rgba(0, 204, 255, 0.2); /* More noticeable glow */
+            border: 2px solid var(--border-color);
+            margin-bottom: 15px;
+            display: block; /* Ensure it's visible */
+        }
+        
+        .fixed-ship-stats {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          background-color: var(--card-bg);
+          z-index: 999;
+          padding: 15px;
+          box-shadow: 0 5px 15px var(--shadow-color);
+          display: none;
+          transition: all 0.3s ease;
+          border-bottom: 2px solid var(--border-color);
+          backdrop-filter: blur(8px);
+        }
+        
+        .fixed-ship-stats.visible {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            animation: slideDown 0.3s forwards;
+        }
+        
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+    
+        .fixed-stat {
+            display: flex;
+            align-items: center;
+        }
+    
+        .fixed-label {
+            font-weight: bold;
+            margin-right: 5px;
+            color: var(--secondary);
+        }
+    
+        .fixed-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            font-family: 'Exo 2', sans-serif;
+            text-shadow: 0 0 5px var(--accent-cyan);
+            color: var(--text);
+        }
+    
+        .crew-container {
+            background-color: var(--card-bg);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px var(--shadow-color);
+            border: 1px solid var(--border-color);
+        }
+    
+        .captain {
+            grid-column: span 6;
+            border-top-color: #6a1b9a;
+        }
+    
+        .helmsman {
+            grid-column: span 6;
+            border-top-color: #0277bd;
+        }
+    
+        .gunner {
+            grid-column: span 12;
+            border-top-color: #d32f2f;
+        }
+    
+        .boatswain {
+            grid-column: span 12;
+            border-top-color: #388e3c;
+        }
+    
+        .role-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 4px 10px;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            font-size: 0.8rem;
+            border: 1px solid currentColor;
+            text-shadow: 0 0 5px currentColor;
+        }
+    
+        .captain .role-badge {
+            background-color: #6a1b9a;
+        }
+    
+        .helmsman .role-badge {
+            background-color: #0277bd;
+        }
+    
+        .gunner .role-badge {
+            background-color: #d32f2f;
+        }
+    
+        .boatswain .role-badge {
+            background-color: #388e3c;
+        }
+    
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+    
+        .stat-block {
+            background-color: var(--light);
+            padding: 10px;
+            border-radius: 5px;
+        }
+    
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--secondary);
+            display: block;
+            margin-bottom: 5px;
+        }
+    
+        .stat-value {
+          font-size: 1.3rem;
+          font-weight: bold;
+          color: var(--accent-cyan);
+          width: 100%;
+          background: transparent;
+          border: none;
+          text-align: center;
+          font-family: 'Courier New', monospace;
+          text-shadow: 0 0 5px rgba(51, 204, 255, 0.3); /* Very subtle glow */
+        }
+    
+        .stat-value:focus {
+            outline: 2px solid var(--accent);
+            border-radius: 3px;
+        }
+    
+        .initiative-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 15px 0;
+        }
+    
+        .initiative-label {
+            font-weight: bold;
+            color: var(--secondary);
+            margin-right: 10px;
+        }
+    
+        .initiative-value {
+            width: 60px;
+            padding: 5px;
+            text-align: center;
+            font-weight: bold;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background-color: var(--light);
+            color: var(--dark);
+            font-family: 'Courier New', monospace;
+        }
+    
+        .ability-list {
+            margin-top: 15px;
+        }
+    
+        .ability-item {
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed var(--border-color);
+        }
+    
+        .ability-name {
+            font-weight: bold;
+            margin-bottom: 3px;
+            color: var(--primary);
+        }
+    
+        .ability-desc {
+            font-size: 0.9rem;
+            color: var(--text);
+        }
+    
+        .maneuver {
+            margin-bottom: 15px;
+        }
+    
+        .maneuver-title {
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+    
+        .maneuver-level {
+            font-size: 0.9rem;
+            color: #777;
+            font-weight: normal;
+        }
+    
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+    
+        th {
+            background-color: var(--primary);
+            color: white;
+            text-align: left;
+            padding: 10px;
+        }
+    
+        td {
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+    
+        tr:nth-child(even) {
+            background-color: rgba(0, 204, 255, 0.03);
+        }
+    
+        .weapon-property {
+            display: inline-block;
+            background-color: var(--light);
+            color: var(--secondary);
+            padding: 4px 8px; /* Increased padding */
+            border-radius: 3px;
+            font-size: 0.9rem; /* Increased font size */
+            margin-right: 5px;
+            margin-top: 5px;
+            font-family: 'Exo 2', sans-serif;
+        }
+        .weapon-property input[type="number"] {
+            width: 40px; /* Wider input */
+            text-align: center;
+            padding: 2px;
+            font-size: 0.9rem;
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            background-color: var(--light);
+            color: var(--dark);
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 8px 10px; /* Increased padding */
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 14px; /* Standardized font size */
+            background-color: var(--light);
+            color: var(--dark);
+            font-family: 'Exo 2', sans-serif;
+        }
+        .crew-role-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--text);
+            font-size: 16px; /* Increased size */
+            font-family: 'Quantico', sans-serif;
+        }
+    
+        .power-module {
+            background-color: var(--light);
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--secondary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .power-module.active {
+            background-color: rgba(56, 142, 60, 0.15);
+            border-left-color: #388e3c;
+            box-shadow: 0 0 10px var(--success);
+        }
+    
+        .power-module:hover {
+            transform: translateX(5px);
+        }
+    
+        .power-module.error {
+            animation: shake 0.5s;
+            border-left-color: var(--danger);
+        }
+    
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            20% { transform: translateX(-10px); }
+            40% { transform: translateX(10px); }
+            60% { transform: translateX(-10px); }
+            80% { transform: translateX(10px); }
+            100% { transform: translateX(0); }
+        }
+    
+        .power-info {
+            flex: 1;
+        }
+    
+        .power-name {
+            font-weight: bold;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+    
+        .power-cost {
+            background-color: var(--secondary);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            margin-left: 8px;
+        }
+    
+        .power-hp {
+            margin-left: 15px;
+            font-size: 0.9rem;
+            color: var(--text);
+        }
+    
+        .power-desc {
+            font-size: 0.9rem;
+            margin-top: 5px;
+            color: var(--text);
+        }
+    
+        .power-toggle {
+            width: 40px;
+            height: 20px;
+            background-color: #ddd;
+            border-radius: 10px;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+    
+        .power-toggle::after {
+            content: '';
+            width: 16px;
+            height: 16px;
+            background-color: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: all 0.2s ease;
+        }
+    
+        .power-module.active .power-toggle {
+            background-color: #388e3c;
+        }
+    
+        .power-module.active .power-toggle::after {
+            left: 22px;
+        }
+    
+        .command-options {
+            display: flex;
+            margin-top: 10px;
+            gap: 10px;
+            flex-direction: column;
+        }
+    
+        .command-option {
+            padding: 10px;
+            border: 2px solid var(--border-color);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text);
+        }
+    
+        .command-option.selected {
+            border-color: var(--accent-purple);
+            background-color: rgba(153, 51, 255, 0.1);
+            box-shadow: 0 0 10px var(--accent-purple);
+        }
+    
+        .crew-table {
+            width: 100%;
+            margin-top: 15px;
+        }
+    
+        .crew-table th {
+            background-color: var(--secondary);
+            color: white;
+            text-align: left;
+            padding: 8px;
+            font-size: 0.9rem;
+        }
+    
+        .crew-table td {
+            padding: 8px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.9rem;
+        }
+    
+        .crew-count {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+    
+        .crew-count-label {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+    
+        .crew-count-value {
+            background-color: var(--light);
+            padding: 5px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+    
+        .movement-details {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: var(--light);
+            border-radius: 5px;
+            font-size: 14px; /* Added explicit font size */
+        }
+    
+        .movement-item {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+    
+        .movement-label {
+            font-weight: bold;
+            color: var(--secondary);
+            min-width: 180px; /* Increased width for better alignment */
+            font-size: 16px; /* Slightly larger font */
+            font-family: 'Quantico', sans-serif; /* Use Quantico for labels */
+        }
+    
+        .movement-value {
+            font-weight: bold;
+            color: var(--text);
+            font-size: 16px; /* Slightly larger font */
+        }
+    
+        .movement-note {
+            font-size: 14px; /* Slightly larger font */
+            color: var(--text);
+            margin-left: 10px;
+            font-style: italic;
+        }
+    
+        .weapon-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+            align-items: center;
+        }
+    
+        .weapon-header {
+            font-weight: bold;
+            color: var(--secondary);
+            font-size: 0.9rem;
+        }
+    
+        .weapon-property-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+    
+        .number-input {
+            width: 60px;
+            text-align: center;
+            padding: 5px;
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            background-color: var(--light);
+            color: var(--dark);
+        }
+    
+        .power-charge-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+    
+        .power-charge-label {
+            font-weight: bold;
+            color: var(--secondary);
+        }
+    
+        .power-charge-input {
+            width: 60px;
+            padding: 5px;
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            text-align: center;
+            font-weight: bold;
+            background-color: var(--light);
+            color: var(--dark);
+        }
+    
+        .active-modules-counter {
+            background-color: var(--secondary);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            margin-left: 10px;
+        }
+    
+        .hp-display {
+            display: flex;
+            align-items: center;
+        }
+    
+        .hp-current {
+            margin-right: 2px;
+        }
+    
+        .hp-max {
+            margin-left: 2px;
+        }
+    
+        /* Tooltip styles */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            margin-left: 5px;
+            cursor: help;
+        }
+    
+        .tooltip i {
+            color: var(--secondary);
+            font-size: 0.8rem;
+        }
+    
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: var(--dark);
+            color: white;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.8rem;
+        }
+    
+        .tooltip .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: var(--dark) transparent transparent transparent;
+        }
+    
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+    
+        select {
+            padding: 5px;
+            border-radius: 3px;
+            border: 1px solid var(--border-color);
+            width: 120px;
+            background-color: var(--light);
+            color: var(--dark);
+        }
+    
+        /* Dark mode toggle button */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2001; /* Removed the "px" */
+            width: 60px;
+            height: 30px;
+            pointer-events: auto;
+            background: linear-gradient(to right, #6666ff, #ff66cc);
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px var(--shadow-color);
+            overflow: hidden;
+            border: 2px solid var(--border-color);
+        }
+        
+        .theme-toggle::before {
+            content: '☀️';
+            position: absolute;
+            left: 7px;
+            top: 4px;
+            font-size: 16px;
+            z-index: 2;
+        }
+        
+        .theme-toggle::after {
+            content: '🌙';
+            position: absolute;
+            right: 7px;
+            top: 4px;
+            font-size: 16px;
+            z-index: 2;
+        }
+        
+        .theme-toggle .toggle-slider {
+            position: absolute;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            background-color: white;
+            transition: all 0.3s ease;
+            z-index: 3;
+            box-shadow: 0 0 5px rgba(0,0,0,0.3);
+        }
+        
+        [data-theme="dark"] .theme-toggle .toggle-slider {
+            left: 32px;
+        }
+    
+        /* Cyberpunk style grid lines */
+        .section {
+            position: relative;
+        }
+    
+        .section::after {
+            content: '';
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 50px;
+            height: 50px;
+            border-right: 2px solid var(--border-color);
+            border-bottom: 2px solid var(--border-color);
+            opacity: 0.5;
+            border-bottom-right-radius: 5px;
+        }
+        .background-selector-button {
+          background-color: var(--secondary);
+          color: white;
+          border: none;
+          padding: 5px 10px;
+          border-radius: 5px;
+          cursor: pointer;
+          font-size: 0.9rem;
+          transition: all 0.3s;
+          margin-left: 10px;
+        }
+        
+        .background-selector-button:hover {
+          background-color: var(--primary);
+          transform: translateY(-2px);
+          box-shadow: 0 0 10px var(--shadow-color);
+        }
+        
+        .background-selector {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            z-index: 2001;
+            width: 80%;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 2px solid var(--border-color);
+            display: none; /* Start hidden */
+        }
+        
+        .background-selector.visible {
+            display: block;
+            animation: fadeIn 0.3s forwards;
+        }
+        
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        
+        .background-options {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 10px;
+        }
+        
+        .bg-option {
+          position: relative;
+          padding-bottom: 75%; /* 4:3 aspect ratio */
+          overflow: hidden;
+          border-radius: 5px;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        
+        .bg-option img {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+        
+        .bg-option:hover {
+          transform: scale(1.05);
+          box-shadow: 0 0 15px var(--accent-cyan);
+        }
+        
+        .bg-option-title {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          background: rgba(0, 0, 0, 0.6);
+          color: white;
+          padding: 5px;
+          text-align: center;
+          font-size: 0.8rem;
+        }
+        
+        .background-selector-close {
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          background: none;
+          border: none;
+          color: var(--text);
+          font-size: 1.5rem;
+          cursor: pointer;
+        }
+        .background-btn {
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+            margin-right: 10px;
+        }
+        
+        .background-btn:hover {
+            background-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 0 10px var(--secondary);
+        }
+        
+        .background-selector {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 30px var(--shadow-color);
+            z-index: 2001;
+            width: 80%;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 2px solid var(--border-color);
+            display: none;
+        }
+        
+        .background-selector-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .background-selector-header h3 {
+            margin: 0;
+            color: var(--primary);
+        }
+        
+        .background-selector-close {
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .background-options {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+        
+        .bg-option {
+            position: relative;
+            border-radius: 5px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s;
+            height: 100px;
+        }
+        
+        .bg-option img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .bg-option:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px var(--accent-cyan);
+        }
+        
+        .bg-option-title {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 5px;
+            text-align: center;
+            font-size: 0.8rem;
+        }
+    
+        @media print {
+            body {
+                background-color: white;
+            }
+            
+            .sheet-container {
+                box-shadow: none;
+            }
+            
+            .save-container, .theme-toggle {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="theme-toggle" id="themeToggle" title="Toggle Dark Mode">
+        <div class="toggle-slider"></div>
+    </div>
+    <div class="fixed-ship-stats" id="fixedStats">
+        <div class="fixed-stat">
+            <div class="fixed-label">Ship:</div>
+            <div class="fixed-value" id="fixedShipName">Oceans Court Express</div>
+        </div>
+        <div class="fixed-stat">
+            <div class="fixed-label">AC:</div>
+            <div class="fixed-value" id="fixedAC">16</div>
+        </div>
+        <div class="fixed-stat">
+            <div class="fixed-label">HP:</div>
+            <div class="fixed-value" id="fixedHP">100/100</div>
+        </div>
+        <div class="fixed-stat">
+            <div class="fixed-label">Temp HP:</div>
+            <div class="fixed-value" id="fixedTempHP">0</div>
+        </div>
+    </div>
+    <div id="notification" class="notification">Character uploaded successfully!</div>
+    <div class="sheet-container">
+        <img src="/api/placeholder/800/600" alt="Ship Silhouette" class="watermark">
+        
+        <div class="sheet-header">
+            <div>
+                <input type="text" class="ship-name" value="Oceans Court Express" id="shipName">
+                <div class="ship-class">Frigate Class (2×2)</div>
+            </div>
+            <div class="save-container">
+                <button class="background-btn" onclick="toggleBackgroundSelector()">CHANGE BACKGROUND</button>
+                <button class="save-btn" onclick="saveSheet()">SAVE SHEET</button>
+            </div>
+        </div>
+        
+        <div class="grid-container">
+            <!-- Ship Stats Section -->
+            <div class="section ship-stats">
+                <div class="stats-container">
+                    <h2 class="section-title">
+                        <i>⚓</i> Ship Attributes
+                    </h2>
+                    <div class="stat-grid">
+                        <div class="stat-block">
+                            <label class="stat-label">Armor Class (AC)</label>
+                            <input type="number" class="stat-value" value="16" id="shipAC">
+                        </div>
+                        <div class="stat-block">
+                            <label class="stat-label">Hull Points</label>
+                            <div class="hp-display">
+                                <input type="number" class="stat-value hp-current" value="100" id="currentHP" style="width: 45%">
+                                <span>/</span>
+                                <input type="number" class="stat-value hp-max" value="100" id="maxHP" style="width: 45%">
+                            </div>
+                        </div>
+                        <div class="stat-block">
+                            <label class="stat-label">Temporary Hull Points</label>
+                            <input type="number" class="stat-value" value="0" id="tempHP">
+                        </div>
+                        <div class="stat-block">
+                            <label class="stat-label">Air Supply (Days)</label>
+                            <input type="number" class="stat-value" value="30" id="airSupply">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="crew-container">
+                    <h2 class="section-title">
+                        <i>👥</i> Crew Details
+                    </h2>
+                    
+                    <div class="crew-count">
+                        <div class="crew-count-label">Current Crew:</div>
+                        <div class="crew-count-value">
+                            <span id="currentCrewCount">5</span>/15
+                        </div>
+                        <div style="margin-left: 10px; font-size: 0.8rem; color: #777;">(Minimum: 5)</div>
+                    </div>
+                    
+                    <table class="crew-table">
+                        <thead>
+                            <tr>
+                                <th>Crew Type</th>
+                                <th>Cost per Day</th>
+                                <th>Number</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Green Crew (CR 1/8)</td>
+                                <td>1.5 gp</td>
+                                <td>
+                                    <input type="number" class="number-input crew-number" value="0" min="0" data-cost="1.5" id="greenCrew">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Mercenaries (CR 1/2)</td>
+                                <td>3 gp</td>
+                                <td>
+                                    <input type="number" class="number-input crew-number" value="0" min="0" data-cost="3" id="mercenaries">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Veteran Crew (CR 1/2 or CR 2)</td>
+                                <td>5 gp</td>
+                                <td>
+                                    <input type="number" class="number-input crew-number" value="0" min="0" data-cost="5" id="veteranCrew">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Giff Mercenaries (CR 3)</td>
+                                <td>6.5 gp</td>
+                                <td>
+                                    <input type="number" class="number-input crew-number" value="0" min="0" data-cost="6.5" id="giffMercenaries">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Hurwaeti Mercenaries (CR 4)</td>
+                                <td>8 gp</td>
+                                <td>
+                                    <input type="number" class="number-input crew-number" value="0" min="0" data-cost="8" id="hurwaetiMercenaries">
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <div style="margin-top: 15px; display: flex; justify-content: space-between;">
+                        <div style="font-weight: bold;">Daily Crew Cost:</div>
+                        <div id="dailyCrewCost">0 gp</div>
+                    </div>
+                    
+                    <div class="crew-roles" style="margin-top: 20px;">
+                        <div class="crew-role">
+                            <div class="crew-role-name">Captain:</div>
+                            <div class="crew-role-input-group">
+                                <input type="text" class="crew-role-player" id="captainPlayer" placeholder="Player name..." readonly>
+                                <button class="upload-btn captain-upload" onclick="triggerFileUpload('captain')">Upload Character</button>
+                                <input type="file" id="captainFileUpload" style="display: none;" accept=".json" onchange="handleFileUpload(this, 'captain')">
+                            </div>
+                        </div>
+                        <div class="crew-role">
+                            <div class="crew-role-name">Helmsman:</div>
+                            <div class="crew-role-input-group">
+                                <input type="text" class="crew-role-player" id="helmsmanPlayer" placeholder="Player name..." readonly>
+                                <button class="upload-btn helmsman-upload" onclick="triggerFileUpload('helmsman')">Upload Character</button>
+                                <input type="file" id="helmsmanFileUpload" style="display: none;" accept=".json" onchange="handleFileUpload(this, 'helmsman')">
+                            </div>
+                        </div>
+                        <div class="crew-role">
+                            <div class="crew-role-name">Gunner 1:</div>
+                            <div class="crew-role-input-group">
+                                <input type="text" class="crew-role-player" id="gunner1Player" placeholder="Player name..." readonly>
+                                <button class="upload-btn gunner-upload" onclick="triggerFileUpload('gunner1')">Upload Character</button>
+                                <input type="file" id="gunner1FileUpload" style="display: none;" accept=".json" onchange="handleFileUpload(this, 'gunner1')">
+                            </div>
+                        </div>
+                        <div class="crew-role">
+                            <div class="crew-role-name">Gunner 2:</div>
+                            <div class="crew-role-input-group">
+                                <input type="text" class="crew-role-player" id="gunner2Player" placeholder="Player name..." readonly>
+                                <button class="upload-btn gunner-upload" onclick="triggerFileUpload('gunner2')">Upload Character</button>
+                                <input type="file" id="gunner2FileUpload" style="display: none;" accept=".json" onchange="handleFileUpload(this, 'gunner2')">
+                            </div>
+                        </div>
+                        <div class="crew-role">
+                            <div class="crew-role-name">Boatswain:</div>
+                            <div class="crew-role-input-group">
+                                <input type="text" class="crew-role-player" id="boatswainPlayer" placeholder="Player name..." readonly>
+                                <button class="upload-btn boatswain-upload" onclick="triggerFileUpload('boatswain')">Upload Character</button>
+                                <input type="file" id="boatswainFileUpload" style="display: none;" accept=".json" onchange="handleFileUpload(this, 'boatswain')">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Captain Section -->
+            <div class="section captain">
+                <span class="role-badge">CAPTAIN</span>
+                <h2 class="section-title">
+                    <i>🎖️</i> Captain's Station
+                </h2>
+                
+                <div class="initiative-container">
+                    <div class="initiative-label">Ship Initiative:</div>
+                    <input type="text" class="initiative-value" value="+2" id="shipInitiative">
+                </div>
+                
+                <div class="ability-list">
+                    <div class="ability-item">
+                        <div class="ability-name">Hailing</div>
+                        <div class="ability-desc">You can hail other vessels, functioning as a Sending spell to communicate with another ship's Captain.</div>
+                    </div>
+                    
+                    <div class="ability-item">
+                        <div class="ability-name">Captain's Commands</div>
+                        <div class="ability-desc">At the beginning of combat, select one command:</div>
+                    </div>
+                </div>
+                
+                <div class="command-options">
+                    <div class="command-option" onclick="selectCommand(this, 'gunner')" id="gunnerCommand">
+                        <strong>Offensive Order:</strong> Allow the Gunner to make an additional weapon attack with any ship weapon during their turn.
+                    </div>
+                    <div class="command-option" onclick="selectCommand(this, 'boatswain')" id="boatswainCommand">
+                        <strong>Engineering Order:</strong> Enable the Boatswain to allocate one additional power charge beyond their proficiency bonus.
+                    </div>
+                    <div class="command-option" onclick="selectCommand(this, 'helmsman')" id="helmsmanCommand">
+                        <strong>Tactical Order:</strong> Grant the Helmsman +2 to their Charisma (Vehicle) checks for maneuvering and collision avoidance until the start of your next turn.
+                    </div>
+                </div>
+                
+                <div class="ability-list">
+                    <h3 style="margin-top: 15px; color: #6a1b9a;">Special Actions</h3>
+                    
+                    <div class="ability-item">
+                        <div class="ability-name">Grappling Ropes</div>
+                        <div class="ability-desc">When within 5 feet of another vessel, make a Charisma (Vehicles) check (<span id="grappleCheckBonus">+0</span>) to grapple ships together.</div>
+                    </div>
+                    
+                    <div class="ability-item">
+                        <div class="ability-name">To Me, Ocean Court</div>
+                        <div class="ability-desc">Call a boarding/defense party. Crew members who haven't taken their turn teleport to your position.</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Helmsman Section -->
+            <div class="section helmsman">
+                <span class="role-badge">HELMSMAN</span>
+                <h2 class="section-title">
+                    <i>🧭</i> Helm Control
+                </h2>
+                
+                <div class="movement-details">
+                    <div class="movement-item">
+                        <div class="movement-label">Starting Base Velocity:</div>
+                        <div class="movement-value">500 feet</div>
+                    </div>
+                    <div class="movement-item">
+                        <div class="movement-label">Max Acceleration:</div>
+                        <div class="movement-value">200 ft./round</div>
+                        <div class="movement-note">OR 600 ft./round IF you overdrive (risk of overload)</div>
+                    </div>
+                    <div class="movement-item">
+                        <div class="movement-label">Max Deceleration:</div>
+                        <div class="movement-value">200 ft./round</div>
+                        <div class="movement-note">OR 600 ft./round IF you use the emergency brake (risk of damage)</div>
+                    </div>
+                </div>
+                
+                <div class="stat-grid" style="margin-top: 15px;">
+                    <div class="stat-block">
+                        <label class="stat-label">Current Velocity</label>
+                        <input type="number" class="stat-value" value="500" id="currentVelocityHelm"> ft/round
+                    </div>
+                    <div class="stat-block">
+                        <label class="stat-label">Current Direction</label>
+                        <select class="stat-value" id="currentDirectionHelm">
+                            <option value="N">North</option>
+                            <option value="NE">Northeast</option>
+                            <option value="E" selected>East</option>
+                            <option value="SE">Southeast</option>
+                            <option value="S">South</option>
+                            <option value="SW">Southwest</option>
+                            <option value="W">West</option>
+                            <option value="NW">Northwest</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="ability-list">
+                    <h3 style="margin-top: 15px; color: #0277bd;">Special Actions</h3>
+                    
+                    <div class="ability-item">
+                        <div class="ability-name">Overdrive <span style="font-size: 0.9rem; color: #777;">(Special Action)</span></div>
+                        <div class="ability-desc">Triple maximum acceleration, but requires a Charisma (Vehicle) check (<span id="helmsmanCheckBonus">+0</span>). On failure, acceleration capability is zero on your next turn.</div>
+                    </div>
+                    
+                    <div class="ability-item">
+                        <div class="ability-name">Emergency Brake <span style="font-size: 0.9rem; color: #777;">(Special Action)</span></div>
+                        <div class="ability-desc">Triple normal deceleration limit. Requires a Charisma (Vehicle) check (<span id="helmsmanCheckBonus2">+0</span>). On failure, the ship takes 2d6 force damage.</div>
+                    </div>
+                    
+                    <div class="ability-item">
+                        <div class="ability-name">Maneuver - Evade <span style="font-size: 0.9rem; color: #777;">(1st-level)</span></div>
+                        <div class="ability-desc">As a reaction, expend a 1st-level spell slot to add proficiency bonus to ship's AC or Charisma (Vehicle) checks until your next turn.</div>
+                    </div>
+                    
+                    <div class="ability-item">
+                        <div class="ability-name">Maneuver - Jamming <span style="font-size: 0.9rem; color: #777;">(3rd-level)</span></div>
+                        <div class="ability-desc">Expend a 3rd-level spell slot to match speed and acceleration of a target vessel within 5 feet for 1 minute.</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Gunner Section -->
+            <div class="section gunner">
+                <span class="role-badge">GUNNER</span>
+                <h2 class="section-title">
+                    <i>🎯</i> Weapons Control
+                </h2>
+                
+                <div class="ability-item" style="margin-top: 10px;">
+                    <div class="ability-name">Weapon Proficiency</div>
+                    <div class="ability-desc">Add your DEX modifier + proficiency bonus to attack and damage rolls with ship weapons.</div>
+                </div>
+                
+                <div style="margin-top: 15px;">
+                    <h3 style="color: #d32f2f; margin-bottom: 10px;">Ship Weapons</h3>
+                    
+                    <div class="weapon-row" style="background-color: var(--light); font-weight: bold;">
+                        <div class="weapon-header">Weapon</div>
+                        <div class="weapon-header">Range</div>
+                        <div class="weapon-header">To Hit</div>
+                        <div class="weapon-header">Damage</div>
+                        <div class="weapon-header">Position</div>
+                        <div class="weapon-header">Properties</div>
+                        <div class="weapon-header">Assigned Gunner</div>
+                    </div>
+                    
+                    <div class="weapon-row">
+                        <div>Flower Cannon</div>
+                        <div>300/900 ft.</div>
+                        <div>
+                            <input type="text" class="number-input" value="+6" id="rightCannonToHit" readonly>
+                        </div>
+                        <div>3d10<span id="rightCannonDamage"></span> radiant</div>
+                        <div>Right Broadside</div>
+                        <div class="weapon-property-container">
+                            <div class="weapon-property">90° Firing Arc</div>
+                            <div class="weapon-property">HP: <input type="number" style="width: 30px; display: inline-block;" value="10" max="10" min="0" id="rightCannonHP"></div>
+                        </div>
+                        <div>
+                            <select id="rightCannonGunner" onchange="updateWeaponStats('rightCannon')">
+                                <option value="">Select Gunner...</option>
+                                <option value="gunner1">Gunner 1</option>
+                                <option value="gunner2">Gunner 2</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="weapon-row">
+                        <div>Flower Cannon</div>
+                        <div>300/900 ft.</div>
+                        <div>
+                            <input type="text" class="number-input" value="+6" id="leftCannonToHit" readonly>
+                        </div>
+                        <div>3d10<span id="leftCannonDamage"></span> radiant</div>
+                        <div>Left Broadside</div>
+                        <div class="weapon-property-container">
+                            <div class="weapon-property">90° Firing Arc</div>
+                            <div class="weapon-property">HP: <input type="number" style="width: 30px; display: inline-block;" value="10" max="10" min="0" id="leftCannonHP"></div>
+                        </div>
+                        <div>
+                            <select id="leftCannonGunner" onchange="updateWeaponStats('leftCannon')">
+                                <option value="">Select Gunner...</option>
+                                <option value="gunner1">Gunner 1</option>
+                                <option value="gunner2">Gunner 2</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="weapon-row">
+                        <div>Carronade</div>
+                        <div>500/1500 ft.</div>
+                        <div>
+                            <input type="text" class="number-input" value="+6" id="carronadeToHit" readonly>
+                        </div>
+                        <div>8d10<span id="carronadeDamage"></span> bludgeoning</div>
+                        <div>Front (Bow)</div>
+                        <div class="weapon-property-container">
+                            <div class="weapon-property">Utilize</div>
+                            <div class="weapon-property">45° Firing Arc</div>
+                            <div class="weapon-property">HP: <input type="number" style="width: 30px; display: inline-block;" value="10" max="10" min="0" id="carronadeHP"></div>
+                            <div class="tooltip"><i>ℹ️</i>
+                                <span class="tooltip-text">Utilize: Once fired, requires another action to charge before firing again.</span>
+                            </div>
+                        </div>
+                        <div>
+                            <select id="carronadeGunner" onchange="updateWeaponStats('carronade')">
+                                <option value="">Select Gunner...</option>
+                                <option value="gunner1">Gunner 1</option>
+                                <option value="gunner2">Gunner 2</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="ability-list">
+                    <h3 style="margin-top: 15px; color: #d32f2f;">Special Actions</h3>
+                    
+                    <div class="ability-item">
+                        <div class="ability-name">Switch Weapons</div>
+                        <div class="ability-desc">As a bonus action, switch between different weapon systems.</div>
+                    </div>
+                    
+                    <div class="ability-item">
+                        <div class="ability-name">Trigger on the Pulse</div>
+                        <div class="ability-desc">Ready a ship weapon attack to fire at a specific trigger.</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Boatswain Section -->
+            <div class="section boatswain">
+                <span class="role-badge">BOATSWAIN</span>
+                <h2 class="section-title">
+                    <i>⚡</i> Power Systems
+                </h2>
+                
+                <div class="power-charge-container">
+                    <div class="power-charge-label">Available Power Charges:</div>
+                    <input type="number" class="power-charge-input" value="4" min="0" id="availablePowerCharges">
+                    <div>(Proficiency Bonus)</div>
+                    <div class="active-modules-counter">Active: <span id="activeModulesCount">0</span>/<span id="maxModules">4</span></div>
+                </div>
+                
+                <div id="powerModules">
+                    <div class="power-module" onclick="togglePowerModule(this)" data-cost="1" id="weaponsArray">
+                        <div class="power-info">
+                            <div class="power-name">
+                                Weapons Array
+                                <span class="power-cost">1 Charge</span>
+                                <span class="power-hp">HP: <input type="number" class="number-input" style="width: 40px;" value="10" max="10" min="0" id="weaponsArrayHP" onclick="event.stopPropagation();"></span>
+                            </div>
+                            <div class="power-desc">+1d6 damage to all weapon attacks until the start of your next turn</div>
+                        </div>
+                        <div class="power-toggle"></div>
+                    </div>
+                    
+                    <div class="power-module" onclick="togglePowerModule(this)" data-cost="1" id="deflectorGrid">
+                        <div class="power-info">
+                            <div class="power-name">
+                                Deflector Grid
+                                <span class="power-cost">1 Charge</span>
+                                <span class="power-hp">HP: <input type="number" class="number-input" style="width: 40px;" value="10" max="10" min="0" id="deflectorGridHP" onclick="event.stopPropagation();"></span>
+                            </div>
+                            <div class="power-desc">Ship gains resistance to one damage type until the start of your next turn</div>
+                        </div>
+                        <div class="power-toggle"></div>
+                    </div>
+                    
+                    <div class="power-module" onclick="togglePowerModule(this)" data-cost="1" id="thrusterOverride">
+                        <div class="power-info">
+                            <div class="power-name">
+                                Thruster Override
+                                <span class="power-cost">1 Charge</span>
+                                <span class="power-hp">HP: <input type="number" class="number-input" style="width: 40px;" value="10" max="10" min="0" id="thrusterOverrideHP" onclick="event.stopPropagation();"></span>
+                            </div>
+                            <div class="power-desc">+100 feet to the ship's maximum acceleration or deceleration this turn</div>
+                        </div>
+                        <div class="power-toggle"></div>
+                    </div>
+                    
+                    <div class="power-module" onclick="togglePowerModule(this)" data-cost="1" id="hullReinforcement">
+                        <div class="power-info">
+                            <div class="power-name">
+                                Hull Reinforcement
+                                <span class="power-cost">1 Charge</span>
+                                <span class="power-hp">HP: <input type="number" class="number-input" style="width: 40px;" value="10" max="10" min="0" id="hullReinforcementHP" onclick="event.stopPropagation();"></span>
+                            </div>
+                            <div class="power-desc">Ship gains 2d8 temporary hit points</div>
+                        </div>
+                        <div class="power-toggle"></div>
+                    </div>
+                    
+                    <div class="power-module" onclick="togglePowerModule(this)" data-cost="1" id="systemRestoration">
+                        <div class="power-info">
+                            <div class="power-name">
+                                System Restoration
+                                <span class="power-cost">1 Charge</span>
+                                <span class="power-hp">HP: <input type="number" class="number-input" style="width: 40px;" value="10" max="10" min="0" id="systemRestorationHP" onclick="event.stopPropagation();"></span>
+                            </div>
+                            <div class="power-desc">If a weapon system or module has dropped to zero hit points, restore it to functioning at 1 hit point</div>
+                        </div>
+                        <div class="power-toggle"></div>
+                    </div>
+                    
+                    <div class="power-module" onclick="togglePowerModule(this)" data-cost="2" id="warpCoreCharge">
+                        <div class="power-info">
+                            <div class="power-name">
+                                Warp Core Charge
+                                <span class="power-cost">2 Charges</span>
+                                <span class="power-hp">HP: <input type="number" class="number-input" style="width: 40px;" value="10" max="10" min="0" id="warpCoreChargeHP" onclick="event.stopPropagation();"></span>
+                            </div>
+                            <div class="power-desc">After 3 consecutive turns of charging, can initiate warp jump to escape combat</div>
+                        </div>
+                        <div class="power-toggle"></div>
+                    </div>
+                </div>
+                
+                <div class="ability-list">
+                    <h3 style="margin-top: 15px; color: #388e3c;">Special Actions</h3>
+                    
+                    <div class="ability-item">
+                        <div class="ability-name">Arcane Overclock</div>
+                        <div class="ability-desc">As an action, expend a spell slot to gain additional power charges equal to the spell slot level for this turn only.</div>
+                    </div>
+                    
+                    <div class="ability-item">
+                        <div class="ability-name">Emergency Hotfix</div>
+                        <div class="ability-desc">When the ship drops below half its hull points, use your reaction to immediately reallocate 1 power charge.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="background-selector" id="backgroundSelector">
+            <div class="background-selector-header">
+                <h3>Choose Background</h3>
+                <button class="background-selector-close" onclick="toggleBackgroundSelector()">&times;</button>
+            </div>
+            <div class="background-options">
+                <div class="bg-option" data-bg="https://raw.githubusercontent.com/b00yahg/Ocean-Court-Express-Character-Sheet/main/Mtg%201.jpg">
+                    <img src="https://raw.githubusercontent.com/b00yahg/Ocean-Court-Express-Character-Sheet/main/Mtg%201.jpg" alt="MTG 1">
+                    <div class="bg-option-title">MTG 1</div>
+                </div>
+                <div class="bg-option" data-bg="https://raw.githubusercontent.com/b00yahg/Ocean-Court-Express-Character-Sheet/main/mtg%202.jpg">
+                    <img src="https://raw.githubusercontent.com/b00yahg/Ocean-Court-Express-Character-Sheet/main/mtg%202.jpg" alt="MTG 2">
+                    <div class="bg-option-title">MTG 2</div>
+                </div>
+                <div class="bg-option" data-bg="https://raw.githubusercontent.com/b00yahg/Ocean-Court-Express-Character-Sheet/main/mtg%203.jpg">
+                    <img src="https://raw.githubusercontent.com/b00yahg/Ocean-Court-Express-Character-Sheet/main/mtg%203.jpg" alt="MTG 3">
+                    <div class="bg-option-title">MTG 3</div>
+                </div>
+                <div class="bg-option" data-bg="https://raw.githubusercontent.com/b00yahg/Ocean-Court-Express-Character-Sheet/main/mtg%204.jpg">
+                    <img src="https://raw.githubusercontent.com/b00yahg/Ocean-Court-Express-Character-Sheet/main/mtg%204.jpg" alt="MTG 4">
+                    <div class="bg-option-title">MTG 4</div>
+                </div>
+                <div class="bg-option" data-bg="https://raw.githubusercontent.com/b00yahg/Ocean-Court-Express-Character-Sheet/main/novel%201.png">
+                    <img src="https://raw.githubusercontent.com/b00yahg/Ocean-Court-Express-Character-Sheet/main/novel%201.png" alt="Novel 1">
+                    <div class="bg-option-title">Novel 1</div>
+                </div>
+                <div class="bg-option" data-bg="https://raw.githubusercontent.com/b00yahg/Ocean-Court-Express-Character-Sheet/main/novel%202.jpg">
+                    <img src="https://raw.githubusercontent.com/b00yahg/Ocean-Court-Express-Character-Sheet/main/novel%202.jpg" alt="Novel 2">
+                    <div class="bg-option-title">Novel 2</div>
+                </div>
+                <div class="bg-option" data-bg="https://raw.githubusercontent.com/b00yahg/Ocean-Court-Express-Character-Sheet/main/novel%203.jpg">
+                    <img src="https://raw.githubusercontent.com/b00yahg/Ocean-Court-Express-Character-Sheet/main/novel%203.jpg" alt="Novel 3">
+                    <div class="bg-option-title">Novel 3</div>
+                </div>
+                <div class="bg-option" data-bg="https://raw.githubusercontent.com/b00yahg/Ocean-Court-Express-Character-Sheet/main/novel%204.webp">
+                    <img src="https://raw.githubusercontent.com/b00yahg/Ocean-Court-Express-Character-Sheet/main/novel%204.webp" alt="Novel 4">
+                    <div class="bg-option-title">Novel 4</div>
+                </div>
+                <div class="bg-option" data-bg="https://raw.githubusercontent.com/b00yahg/Ocean-Court-Express-Character-Sheet/main/spelljammer%203.jpg">
+                    <img src="https://raw.githubusercontent.com/b00yahg/Ocean-Court-Express-Character-Sheet/main/spelljammer%203.jpg" alt="Spelljammer 3">
+                    <div class="bg-option-title">Spelljammer 3</div>
+                </div>
+                <div class="bg-option" data-bg="https://raw.githubusercontent.com/b00yahg/Ocean-Court-Express-Character-Sheet/main/spelljammer%204.jpg">
+                    <img src="https://raw.githubusercontent.com/b00yahg/Ocean-Court-Express-Character-Sheet/main/spelljammer%204.jpg" alt="Spelljammer 4">
+                    <div class="bg-option-title">Spelljammer 4</div>
+                </div>
+                <div class="bg-option" data-bg="https://raw.githubusercontent.com/b00yahg/Ocean-Court-Express-Character-Sheet/main/spelljammmmer%201.jpg">
+                    <img src="https://raw.githubusercontent.com/b00yahg/Ocean-Court-Express-Character-Sheet/main/spelljammmmer%201.jpg" alt="Spelljammer 1">
+                    <div class="bg-option-title">Spelljammer 1</div>
+                </div>
+                <div class="bg-option" data-bg="https://raw.githubusercontent.com/b00yahg/Ocean-Court-Express-Character-Sheet/main/spelljammmmer%202.jpg">
+                    <img src="https://raw.githubusercontent.com/b00yahg/Ocean-Court-Express-Character-Sheet/main/spelljammmmer%202.jpg" alt="Spelljammer 2">
+                    <div class="bg-option-title">Spelljammer 2</div>
+                </div>
+                <div class="bg-option" data-bg="https://raw.githubusercontent.com/b00yahg/Ocean-Court-Express-Character-Sheet/main/y2k%201.jpg">
+                    <img src="https://raw.githubusercontent.com/b00yahg/Ocean-Court-Express-Character-Sheet/main/y2k%201.jpg" alt="Y2K 1">
+                    <div class="bg-option-title">Y2K 1</div>
+                </div>
+                <div class="bg-option" data-bg="https://raw.githubusercontent.com/b00yahg/Ocean-Court-Express-Character-Sheet/main/y2k%202.webp">
+                    <img src="https://raw.githubusercontent.com/b00yahg/Ocean-Court-Express-Character-Sheet/main/y2k%202.webp" alt="Y2K 2">
+                    <div class="bg-option-title">Y2K 2</div>
+                </div>
+                <div class="bg-option" data-bg="https://raw.githubusercontent.com/b00yahg/Ocean-Court-Express-Character-Sheet/main/y2k%203.jpg">
+                    <img src="https://raw.githubusercontent.com/b00yahg/Ocean-Court-Express-Character-Sheet/main/y2k%203.jpg" alt="Y2K 3">
+                    <div class="bg-option-title">Y2K 3</div>
+                </div>
+                <div class="bg-option" data-bg="https://raw.githubusercontent.com/b00yahg/Ocean-Court-Express-Character-Sheet/main/y2k%204.jpg">
+                    <img src="https://raw.githubusercontent.com/b00yahg/Ocean-Court-Express-Character-Sheet/main/y2k%204.jpg" alt="Y2K 4">
+                    <div class="bg-option-title">Y2K 4</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleDarkMode() {
+            const body = document.body;
+            const currentTheme = body.getAttribute('data-theme');
+            
+            if (currentTheme === 'dark') {
+                body.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+        
+        // Initialize theme from local storage
+        function initializeTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.setAttribute('data-theme', 'dark');
+            }
+        }
+
+        // Store gunner data globally
+        const gunnerData = {
+            gunner1: null,
+            gunner2: null
+        };
+    
+        // Update weapon stats based on selected gunner
+        function updateWeaponStats(weapon) {
+            const selector = document.getElementById(`${weapon}Gunner`);
+            const gunnerRole = selector.value;
+            
+            const toHitElement = document.getElementById(`${weapon}ToHit`);
+            const damageElement = document.getElementById(`${weapon}Damage`);
+            
+            if (gunnerRole && gunnerData[gunnerRole]) {
+                // Update to-hit value
+                toHitElement.value = gunnerData[gunnerRole].toHit;
+                
+                // Update damage modifier
+                damageElement.textContent = gunnerData[gunnerRole].damageMod;
+            } else {
+                // Reset values
+                toHitElement.value = "+0";
+                damageElement.textContent = "";
+            }
+            
+            saveToLocalStorage();
+        }
+    
+        // THEN THE REST OF YOUR EXISTING SCRIPT FUNCTIONS WILL FOLLOW...
+        // Toggle power module activation
+        function togglePowerModule(module) {
+            // Check if we're activating or deactivating
+            const activating = !module.classList.contains('active');
+            
+            if (activating) {
+                // Check if we have enough power charges
+                const availableCharges = parseInt(document.getElementById('availablePowerCharges').value);
+                const activeModules = document.querySelectorAll('.power-module.active').length;
+                const maxModules = availableCharges;
+                
+                // Update max modules display
+                document.getElementById('maxModules').textContent = maxModules;
+                
+                // Check if we can activate more modules
+                if (activeModules >= maxModules) {
+                    // Visual error indication instead of alert
+                    module.classList.add('error');
+                    setTimeout(() => {
+                        module.classList.remove('error');
+                    }, 500);
+                    return;
+                }
+                
+                // Check module cost
+                const moduleCost = parseInt(module.getAttribute('data-cost'));
+                if (activeModules + moduleCost > maxModules) {
+                    // Visual error indication
+                    module.classList.add('error');
+                    setTimeout(() => {
+                        module.classList.remove('error');
+                    }, 500);
+                    return;
+                }
+            }
+            
+            // Toggle active state
+            module.classList.toggle('active');
+            
+            // Update active modules counter
+            updateActiveModulesCount();
+            
+            saveToLocalStorage();
+        }
+        
+        // Toggle captain command selection
+        function selectCommand(option, type) {
+            // Remove selected class from all options
+            document.querySelectorAll('.command-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked option
+            option.classList.add('selected');
+            saveToLocalStorage();
+        }
+        
+        // Update active modules counter
+        function updateActiveModulesCount() {
+            const activeModules = document.querySelectorAll('.power-module.active').length;
+            document.getElementById('activeModulesCount').textContent = activeModules;
+        }
+        
+        // Update crew count and daily cost
+        function updateCrewCount() {
+            // Get all player characters (minimum 5)
+            const playerCharacters = 5;
+            
+            // Get additional crew
+            let additionalCrew = 0;
+            let dailyCost = 0;
+            
+            document.querySelectorAll('.crew-number').forEach(input => {
+                const crewCount = parseInt(input.value);
+                const crewCost = parseFloat(input.getAttribute('data-cost'));
+                
+                additionalCrew += crewCount;
+                dailyCost += crewCount * crewCost;
+            });
+            
+            // Update display
+            const totalCrew = playerCharacters + additionalCrew;
+            document.getElementById('currentCrewCount').textContent = totalCrew;
+            document.getElementById('dailyCrewCost').textContent = dailyCost.toFixed(1) + ' gp';
+            
+            // Check if we're over max crew
+            if (totalCrew > 15) {
+                alert('Warning: You have exceeded the maximum crew capacity of 15!');
+            }
+        }
+        // Sync velocity and direction between displays
+        function syncHelmsmanValues() {
+            // Sync current velocity
+            const currentVelocity = document.getElementById('currentVelocityHelm').value;
+            
+            // Sync current direction
+            const currentDirection = document.getElementById('currentDirectionHelm').value;
+            
+            // Update any displays or calculations that depend on these values
+            saveToLocalStorage();
+        }
+        function handleFixedHeader() {
+            // Always show the fixed header when scrolling down
+            const scrollPosition = window.scrollY || document.documentElement.scrollTop;
+            const fixedStats = document.getElementById('fixedStats');
+            
+            if (scrollPosition > 200) { // Show after scrolling 200px
+                fixedStats.classList.add('visible');
+            } else {
+                fixedStats.classList.remove('visible');
+            }
+        }
+        
+        // Update fixed header values
+        function updateFixedHeaderValues() {
+            document.getElementById('fixedShipName').textContent = document.getElementById('shipName').value;
+            document.getElementById('fixedAC').textContent = document.getElementById('shipAC').value;
+            document.getElementById('fixedHP').textContent = `${document.getElementById('currentHP').value}/${document.getElementById('maxHP').value}`;
+            document.getElementById('fixedTempHP').textContent = document.getElementById('tempHP').value;
+        }
+        
+        // Save all editable content to local storage
+        function saveSheet() {
+            // Get all input fields and their values
+            const inputs = document.querySelectorAll('input, select');
+            const data = {};
+            
+            inputs.forEach(input => {
+                if (input.id) {
+                    data[input.id] = input.value;
+                }
+            });
+            
+            // Save active power modules
+            const powerModules = document.querySelectorAll('.power-module');
+            data['powerModulesState'] = Array.from(powerModules).map(module => {
+                return {
+                    id: module.id,
+                    active: module.classList.contains('active')
+                };
+            });
+            
+            // Save captain command selection
+            const commandOptions = document.querySelectorAll('.command-option');
+            data['captainCommand'] = Array.from(commandOptions).findIndex(option => option.classList.contains('selected'));
+            
+            // Save to local storage
+            localStorage.setItem('oceansCourtExpressData', JSON.stringify(data));
+            
+            // Provide user feedback
+            alert('Ship data saved!');
+            
+            // Create a download option
+            const dataStr = JSON.stringify(data);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = 'OceansCourtExpress_' + new Date().toISOString().slice(0, 10) + '.json';
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+        }
+        // Load data from local storage on page load
+        function loadFromLocalStorage() {
+            const savedData = localStorage.getItem('oceansCourtExpressData');
+            
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                
+                // Restore input values
+                Object.keys(data).forEach(key => {
+                    if (key !== 'powerModulesState' && key !== 'captainCommand' && key !== 'crewRoleStats' && key !== 'gunnerData') {
+                        const element = document.getElementById(key);
+                        if (element) {
+                            element.value = data[key];
+                        }
+                    }
+                });
+                
+                // Restore power modules state
+                if (data.powerModulesState) {
+                    data.powerModulesState.forEach(moduleState => {
+                        const module = document.getElementById(moduleState.id);
+                        if (module) {
+                            if (moduleState.active) {
+                                module.classList.add('active');
+                            } else {
+                                module.classList.remove('active');
+                            }
+                        }
+                    });
+                    
+                    // Update active modules counter
+                    updateActiveModulesCount();
+                }
+                
+                // Restore captain command selection
+                if (data.captainCommand !== undefined && data.captainCommand !== -1) {
+                    const commandOptions = document.querySelectorAll('.command-option');
+                    if (commandOptions.length > data.captainCommand) {
+                        commandOptions[data.captainCommand].classList.add('selected');
+                    }
+                }
+                
+                // Restore gunner data
+                if (data.gunnerData) {
+                    Object.assign(gunnerData, data.gunnerData);
+                    
+                    // Update weapon stats based on assigned gunners
+                    ['rightCannon', 'leftCannon', 'carronade'].forEach(weapon => {
+                        updateWeaponStats(weapon);
+                    });
+                }
+                
+                // Restore crew role stats
+                if (data.crewRoleStats) {
+                    const roles = ['captain', 'helmsman', 'gunner1', 'gunner2', 'boatswain'];
+                    
+                    roles.forEach(role => {
+                        if (data.crewRoleStats[role]) {
+                            // Create stats container if it doesn't exist
+                            let statsDiv = document.getElementById(`${role}Stats`);
+                            if (!statsDiv) {
+                                statsDiv = document.createElement('div');
+                                statsDiv.id = `${role}Stats`;
+                                
+                                // Add to the crew role section
+                                const roleInput = document.getElementById(`${role}Player`);
+                                if (roleInput) {
+                                    const roleSection = roleInput.parentElement;
+                                    roleSection.appendChild(statsDiv);
+                                }
+                            }
+                            
+                            // Set the HTML content
+                            statsDiv.innerHTML = data.crewRoleStats[role];
+                            
+                            // Add clear button
+                            addClearButton(role);
+                        }
+                    });
+                }
+                
+                // Update crew count
+                updateCrewCount();
+            }
+        }
+        
+        // Add file import functionality
+        function addImportButton() {
+            const saveContainer = document.querySelector('.save-container');
+            
+            const importBtn = document.createElement('button');
+            importBtn.className = 'save-btn';
+            importBtn.style.backgroundColor = '#0277bd';
+            importBtn.style.marginRight = '10px';
+            importBtn.textContent = 'IMPORT SHEET';
+            importBtn.onclick = function() {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.json';
+                input.onchange = function(event) {
+                    const file = event.target.files[0];
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        try {
+                            const data = JSON.parse(e.target.result);
+                            localStorage.setItem('oceansCourtExpressData', JSON.stringify(data));
+                            loadFromLocalStorage();
+                            alert('Ship data imported successfully!');
+                        } catch (error) {
+                            alert('Error importing file: ' + error.message);
+                        }
+                    };
+                    
+                    reader.readAsText(file);
+                };
+                
+                input.click();
+            };
+            
+            saveContainer.prepend(importBtn);
+        }
+        
+        // Initialize the sheet
+        window.onload = function() {
+            // Initialize theme
+            initializeTheme();
+            
+            // Load saved data
+            loadFromLocalStorage();
+            addImportButton();
+
+            // Initialize background selection
+            initializeBackgroundSelection();
+            // Set event listeners for all editable elements to save on change
+            const inputs = document.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    // If it's a crew number input, update crew count
+                    if (input.classList.contains('crew-number')) {
+                        updateCrewCount();
+                    }
+                    
+                    // If it's the available power charges input, update max modules
+                    if (input.id === 'availablePowerCharges') {
+                        document.getElementById('maxModules').textContent = input.value;
+                    }
+                    
+                    saveToLocalStorage();
+                });
+            });
+            
+            // Add event listeners for updating fixed header
+            document.getElementById('shipName').addEventListener('input', updateFixedHeaderValues);
+            document.getElementById('shipAC').addEventListener('input', updateFixedHeaderValues);
+            document.getElementById('currentHP').addEventListener('input', updateFixedHeaderValues);
+            document.getElementById('maxHP').addEventListener('input', updateFixedHeaderValues);
+            document.getElementById('tempHP').addEventListener('input', updateFixedHeaderValues);
+            
+            // Add dark mode toggle event listener
+            document.getElementById('themeToggle').addEventListener('click', function() {
+                toggleDarkMode();
+                console.log('Theme toggle clicked'); // For debugging
+            });            
+            // Make sure this is in your window.onload function
+            window.addEventListener('scroll', handleFixedHeader);
+            console.log('Scroll event listener added');
+            
+            // Trigger once on page load to check initial state
+            handleFixedHeader();
+            
+            // Initialize fixed header values
+            updateFixedHeaderValues();
+            
+            // Initialize crew count
+            updateCrewCount();
+            
+            // Initialize active modules counter
+            updateActiveModulesCount();
+        };
+        
+        // Save to local storage on any change
+        function saveToLocalStorage() {
+            // Get all input fields and their values
+            const inputs = document.querySelectorAll('input, select');
+            const data = {};
+            
+            inputs.forEach(input => {
+                if (input.id) {
+                    data[input.id] = input.value;
+                }
+            });
+            
+            // Save active power modules
+            const powerModules = document.querySelectorAll('.power-module');
+            data['powerModulesState'] = Array.from(powerModules).map(module => {
+                return {
+                    id: module.id,
+                    active: module.classList.contains('active')
+                };
+            });
+            
+            // Save captain command selection
+            const commandOptions = document.querySelectorAll('.command-option');
+            data['captainCommand'] = Array.from(commandOptions).findIndex(option => option.classList.contains('selected'));
+            
+            // Save crew role stats
+            const roles = ['captain', 'helmsman', 'gunner1', 'gunner2', 'boatswain'];
+            data['crewRoleStats'] = {};
+            
+            roles.forEach(role => {
+                const statsElement = document.getElementById(`${role}Stats`);
+                if (statsElement) {
+                    data['crewRoleStats'][role] = statsElement.innerHTML;
+                }
+            });
+            
+            // Save gunner data
+            data['gunnerData'] = gunnerData;
+            
+            // Save to local storage
+            localStorage.setItem('oceansCourtExpressData', JSON.stringify(data));
+        }
+        
+        // Process the uploaded character JSON file
+        function handleFileUpload(input, role) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const characterData = JSON.parse(e.target.result);
+                    
+                    // Validate that this is a Foundry VTT character sheet
+                    if (!validateCharacterSheet(characterData)) {
+                        showNotification('Invalid character sheet. Please upload a Foundry VTT character sheet.', true);
+                        return;
+                    }
+                    
+                    // Process based on crew role
+                    if (role === 'gunner1' || role === 'gunner2') {
+                        processGunnerData(characterData, role);
+                    } else {
+                        switch(role) {
+                            case 'captain':
+                                processCaptainData(characterData);
+                                break;
+                            case 'helmsman':
+                                processHelmsmanData(characterData);
+                                break;
+                            case 'boatswain':
+                                processBoatswainData(characterData);
+                                break;
+                        }
+                    }
+                    
+                    // Add a clear button if not already present
+                    addClearButton(role);
+                    
+                    // Save to local storage
+                    saveToLocalStorage();
+                    
+                    // Show success notification
+                    showNotification(`${characterData.name} successfully assigned as ${role.replace(/\d+$/, '')}!`);
+                    
+                } catch (error) {
+                    console.error('Error processing character sheet:', error);
+                    showNotification('Error processing character sheet. Is this a valid JSON file?', true);
+                }
+            };
+            
+            reader.readAsText(file);
+        }
+        
+        // Validate that the uploaded file is a Foundry VTT character sheet
+        function validateCharacterSheet(data) {
+            // Check for essential properties that should exist in a Foundry character sheet
+            return data && 
+                   data.name && 
+                   data.type === "character" && 
+                   data.system && 
+                   data.system.abilities;
+        }
+        
+        // Process Captain character data
+        function processCaptainData(characterData) {
+            // Extract name
+            document.getElementById('captainPlayer').value = characterData.name;
+            
+            // Extract Charisma modifier + proficiency for grapple checks
+            const charMod = getAbilityModifier(characterData.system.abilities.cha.value);
+            const profBonus = getProficiencyBonus(characterData);
+            
+            // Extract initiative modifier
+            let initiativeModifier = getAbilityModifier(characterData.system.abilities.dex.value);
+            if (characterData.system.attributes.init.bonus) {
+                const bonusMatch = characterData.system.attributes.init.bonus.match(/[+-]?\d+/);
+                if (bonusMatch) {
+                    initiativeModifier += parseInt(bonusMatch[0]);
+                }
+            }
+
+            // Calculate grapple check bonus
+            const grappleCheckBonus = charMod + profBonus;
+            const grappleDisplay = (grappleCheckBonus >= 0) ? `+${grappleCheckBonus}` : grappleCheckBonus;
+            
+            // Update grapple check display in ability description
+            const grappleCheckElement = document.getElementById('grappleCheckBonus');
+            if (grappleCheckElement) {
+                grappleCheckElement.textContent = grappleDisplay;
+            }
+            
+            // Set ship's initiative
+            const initiativeDisplay = (initiativeModifier >= 0) ? `+${initiativeModifier}` : initiativeModifier;
+            document.getElementById('shipInitiative').value = initiativeDisplay;
+            
+            // Display captain's stats
+            const captainStatsHtml = `
+                <div class="crew-role-stat">Initiative: ${initiativeDisplay}</div>
+                <div class="crew-role-stat">Charisma: ${charMod >= 0 ? '+' : ''}${charMod}</div>
+                <div class="crew-role-stat">Proficiency Bonus: +${profBonus}</div>
+                <div class="crew-role-stat">Grapple Check: ${(charMod + profBonus) >= 0 ? '+' : ''}${charMod + profBonus}</div>
+            `;
+            addStatsDisplay('captain', captainStatsHtml);
+        }
+        
+        // Process Helmsman character data
+        function processHelmsmanData(characterData) {
+            // Extract name
+            document.getElementById('helmsmanPlayer').value = characterData.name;
+            
+            // Extract Charisma modifier + proficiency for vehicle checks
+            const chaMod = getAbilityModifier(characterData.system.abilities.cha.value);
+            const profBonus = getProficiencyBonus(characterData);
+            
+            // Calculate vehicle check bonus (always add proficiency)
+            // Changed to always include proficiency since this is a specialized task
+            const vehicleCheckBonus = chaMod + profBonus;
+            const vehicleDisplay = (vehicleCheckBonus >= 0) ? `+${vehicleCheckBonus}` : vehicleCheckBonus;
+            
+            // Update vehicle check display in ability descriptions
+            const checkElements = document.querySelectorAll('[id^="helmsmanCheckBonus"]');
+            checkElements.forEach(element => {
+                element.textContent = vehicleDisplay;
+            });
+            
+            // Display helmsman's stats
+            const helmsmanStatsHtml = `
+                <div class="crew-role-stat">Charisma: ${chaMod >= 0 ? '+' : ''}${chaMod}</div>
+                <div class="crew-role-stat">Proficiency Bonus: +${profBonus}</div>
+                <div class="crew-role-stat">Vehicle Check: ${vehicleDisplay}</div>
+            `;
+            addStatsDisplay('helmsman', helmsmanStatsHtml);
+        }
+        
+        // Process Gunner character data
+        function processGunnerData(characterData, role) {
+            // Extract name
+            document.getElementById(`${role}Player`).value = characterData.name;
+            
+            // Extract Dexterity modifier + proficiency for weapon attacks
+            const dexMod = getAbilityModifier(characterData.system.abilities.dex.value);
+            const profBonus = getProficiencyBonus(characterData);
+            
+            // Calculate weapon attack bonus
+            const attackBonus = dexMod + profBonus;
+            const attackDisplay = (attackBonus >= 0) ? `+${attackBonus}` : attackBonus;
+            const damageDisplay = (dexMod >= 0) ? `+${dexMod}` : dexMod;
+            
+            // Store gunner data
+            gunnerData[role] = {
+                name: characterData.name,
+                toHit: attackDisplay,
+                damageMod: damageDisplay
+            };
+            
+            // Update any weapons already assigned to this gunner
+            updateAssignedWeapons(role);
+            
+            // Display gunner's stats
+            const gunnerStatsHtml = `
+                <div class="crew-role-stat">Dexterity: ${dexMod >= 0 ? '+' : ''}${dexMod}</div>
+                <div class="crew-role-stat">Proficiency Bonus: +${profBonus}</div>
+                <div class="crew-role-stat">Attack Bonus: ${attackDisplay}</div>
+                <div class="crew-role-stat">Damage Modifier: ${damageDisplay}</div>
+            `;
+            addStatsDisplay(role, gunnerStatsHtml);
+        }
+        
+        // Update assigned weapons for a gunner
+        function updateAssignedWeapons(role) {
+            const weapons = ['rightCannon', 'leftCannon', 'carronade'];
+            
+            weapons.forEach(weapon => {
+                const selector = document.getElementById(`${weapon}Gunner`);
+                if (selector && selector.value === role) {
+                    updateWeaponStats(weapon);
+                }
+            });
+        }
+        
+        // Process Boatswain character data
+        function processBoatswainData(characterData) {
+            // Extract name
+            document.getElementById('boatswainPlayer').value = characterData.name;
+            
+            // Extract proficiency bonus
+            const profBonus = getProficiencyBonus(characterData);
+            
+            // Update available power charges
+            document.getElementById('availablePowerCharges').value = profBonus;
+            document.getElementById('maxModules').textContent = profBonus;
+            
+            // Display boatswain's stats
+            const boatswainStatsHtml = `
+                <div class="crew-role-stat">Proficiency Bonus: +${profBonus}</div>
+                <div class="crew-role-stat">Available Power Charges: ${profBonus}</div>
+            `;
+            addStatsDisplay('boatswain', boatswainStatsHtml);
+        }
+        
+        // Helper function to calculate ability modifier from ability score
+        function getAbilityModifier(abilityScore) {
+            return Math.floor((abilityScore - 10) / 2);
+        }
+        
+        // Helper function to get proficiency bonus from character data
+        function getProficiencyBonus(characterData) {
+            // Always return 3 regardless of character level
+            return 3;
+        }
+        
+        // Show notification
+        function showNotification(message, isError = false) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            
+            if (isError) {
+                notification.classList.add('error');
+            } else {
+                notification.classList.remove('error');
+            }
+            
+            // Hide notification after 3 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Add or update stats display for a crew role
+        function addStatsDisplay(role, statsHtml) {
+            // Check if stats display already exists
+            const existingStats = document.getElementById(`${role}Stats`);
+            if (existingStats) {
+                existingStats.innerHTML = statsHtml;
+            } else {
+                // Create new stats display
+                const statsDiv = document.createElement('div');
+                statsDiv.id = `${role}Stats`;
+                statsDiv.innerHTML = statsHtml;
+                
+                // Add to the crew role section
+                const roleSection = document.querySelector(`.crew-role input#${role}Player`).parentElement;
+                roleSection.appendChild(statsDiv);
+            }
+        }
+        
+        // Add clear button to remove character data
+        function addClearButton(role) {
+            // Check if clear button already exists
+            if (document.getElementById(`${role}ClearBtn`)) {
+                return;
+            }
+            
+            // Create clear button
+            const clearBtn = document.createElement('button');
+            clearBtn.id = `${role}ClearBtn`;
+            clearBtn.className = 'clear-btn';
+            clearBtn.textContent = '✕';
+            clearBtn.title = 'Clear character data';
+            clearBtn.onclick = function() {
+                clearCharacterData(role);
+            };
+            
+            // Add to the crew role section
+            const roleInput = document.getElementById(`${role}Player`);
+            roleInput.parentNode.appendChild(clearBtn);
+        }
+
+        // Trigger the file upload input
+        function triggerFileUpload(role) {
+            document.getElementById(role + 'FileUpload').click();
+        }
+        
+        // Clear character data
+        function clearCharacterData(role) {
+            // Reset input
+            document.getElementById(`${role}Player`).value = '';
+            
+            // Remove stats display
+            const statsDisplay = document.getElementById(`${role}Stats`);
+            if (statsDisplay) {
+                statsDisplay.remove();
+            }
+            
+            // Remove clear button
+            const clearBtn = document.getElementById(`${role}ClearBtn`);
+            if (clearBtn) {
+                clearBtn.remove();
+            }
+            
+            // Role-specific resets
+            if (role === 'gunner1' || role === 'gunner2') {
+                // Clear gunner data
+                gunnerData[role] = null;
+                
+                // Clear any weapons assigned to this gunner
+                const weapons = ['rightCannon', 'leftCannon', 'carronade'];
+                weapons.forEach(weapon => {
+                    const selector = document.getElementById(`${weapon}Gunner`);
+                    if (selector && selector.value === role) {
+                        selector.value = '';
+                        updateWeaponStats(weapon);
+                    }
+                });
+            } else {
+                switch(role) {
+                    case 'captain':
+                        document.getElementById('shipInitiative').value = '+0';
+                        if (document.getElementById('grappleCheckBonus')) {
+                            document.getElementById('grappleCheckBonus').textContent = '+0';
+                        }
+                        break;
+                    case 'helmsman':
+                        // Reset helmsman-specific values
+                        const checkElements = document.querySelectorAll('[id^="helmsmanCheckBonus"]');
+                        checkElements.forEach(element => {
+                            element.textContent = '+0';
+                        });
+                        break;
+                    case 'boatswain':
+                        document.getElementById('availablePowerCharges').value = '4';
+                        document.getElementById('maxModules').textContent = '4';
+                        break;
+                }
+            }
+            
+            // Save changes
+            saveToLocalStorage();
+            
+            // Show notification
+            showNotification(`${role.replace(/\d+$/, '')} data cleared`);
+        }
+        // Background selection functionality
+        function toggleBackgroundSelector() {
+            const selector = document.getElementById('backgroundSelector');
+            if (selector.style.display === 'block') {
+                selector.style.display = 'none';
+            } else {
+                selector.style.display = 'block';
+            }
+        }
+        
+        function initializeBackgroundSelection() {
+            // Load saved background if exists
+            const savedBg = localStorage.getItem('selectedBackground');
+            if (savedBg) {
+                applyBackground(savedBg);
+            }
+            
+            // Add event listeners to background options
+            const bgOptions = document.querySelectorAll('.bg-option');
+            bgOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    const bgFile = this.getAttribute('data-bg');
+                    applyBackground(bgFile);
+                    
+                    // Save selection to localStorage
+                    localStorage.setItem('selectedBackground', bgFile);
+                    
+                    // Hide selector after selection
+                    toggleBackgroundSelector();
+                });
+            });
+        }
+        
+        function applyBackground(bgFile) {
+            // Change watermark image
+            const watermark = document.querySelector('.watermark');
+            if (watermark) {
+                watermark.src = bgFile;
+                watermark.style.opacity = '0.1'; // Adjust opacity as needed
+            }
+            
+            // Apply background to body
+            document.body.style.backgroundImage = `url(${bgFile})`;
+            document.body.style.backgroundSize = 'cover';
+            document.body.style.backgroundAttachment = 'fixed';
+            document.body.style.backgroundPosition = 'center';
+        }
+        
+        // Initialize background selection when window loads
+        window.addEventListener('load', initializeBackgroundSelection);
+    </script>
+</body>
+</html>
+
