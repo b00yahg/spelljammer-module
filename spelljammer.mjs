@@ -104,8 +104,8 @@ Hooks.once("init", () => {
     `modules/${MODULE_ID}/templates/parts/weapons-list.hbs`
   ]);
 
-  // Register custom sheet using ApplicationV2 API
-  DocumentSheetConfig.registerSheet(Actor, MODULE_ID, SpelljammerShipSheet, {
+  // Register custom sheet using legacy API
+  Actors.registerSheet(MODULE_ID, SpelljammerShipSheet, {
     types: ["vehicle"],
     makeDefault: false,
     label: "Spelljammer Ship Sheet"

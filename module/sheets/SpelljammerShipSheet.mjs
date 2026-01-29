@@ -1,10 +1,7 @@
 /**
  * Spelljammer Ship Sheet - Custom vehicle sheet for Foundry VTT v13
- * Uses ApplicationV2 / DocumentSheetV2 framework
+ * Uses legacy ActorSheet for maximum compatibility
  */
-
-const { HandlebarsApplicationMixin } = foundry.applications.api;
-const { ActorSheetV2 } = dnd5e.applications.actor;
 
 import {
   MODULE_ID,
@@ -18,77 +15,25 @@ import {
 } from "../../spelljammer.mjs";
 import { SpelljammerRolls } from "../helpers/rolls.mjs";
 
-export class SpelljammerShipSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
+export class SpelljammerShipSheet extends ActorSheet {
 
   /** @override */
-  static DEFAULT_OPTIONS = {
-    classes: ["dnd5e2", "sheet", "actor", "vehicle", "spelljammer-ship"],
-    position: { width: 900, height: 800 },
-    window: {
-      resizable: true
-    },
-    actions: {
-      // Crew management
-      assignCrew: SpelljammerShipSheet.#onAssignCrew,
-      removeCrew: SpelljammerShipSheet.#onRemoveCrew,
-      // Power modules
-      toggleModule: SpelljammerShipSheet.#onToggleModule,
-      // Captain actions
-      selectCommand: SpelljammerShipSheet.#onSelectCommand,
-      rollGrapple: SpelljammerShipSheet.#onRollGrapple,
-      useToMe: SpelljammerShipSheet.#onUseToMe,
-      rollInitiative: SpelljammerShipSheet.#onRollInitiative,
-      // Helmsman actions
-      rollOverdrive: SpelljammerShipSheet.#onRollOverdrive,
-      rollEmergencyBrake: SpelljammerShipSheet.#onRollEmergencyBrake,
-      useEvade: SpelljammerShipSheet.#onUseEvade,
-      useJamming: SpelljammerShipSheet.#onUseJamming,
-      updateVelocity: SpelljammerShipSheet.#onUpdateVelocity,
-      // Gunner actions
-      rollWeaponAttack: SpelljammerShipSheet.#onRollWeaponAttack,
-      assignWeaponGunner: SpelljammerShipSheet.#onAssignWeaponGunner,
-      addWeapon: SpelljammerShipSheet.#onAddWeapon,
-      deleteWeapon: SpelljammerShipSheet.#onDeleteWeapon,
-      // Boatswain actions
-      rollArcaneOverclock: SpelljammerShipSheet.#onRollArcaneOverclock,
-      rollHullReinforcement: SpelljammerShipSheet.#onRollHullReinforcement,
-      useEmergencyHotfix: SpelljammerShipSheet.#onUseEmergencyHotfix,
-      // General
-      rollCollisionDamage: SpelljammerShipSheet.#onRollCollisionDamage,
-      openCharacterSheet: SpelljammerShipSheet.#onOpenCharacterSheet
-    },
-    form: {
-      submitOnChange: true
-    }
-  };
-
-  /** @override */
-  static PARTS = {
-    header: {
-      template: `modules/${MODULE_ID}/templates/parts/ship-stats.hbs`
-    },
-    tabs: {
-      template: "templates/generic/tab-navigation.hbs"
-    },
-    bridge: {
+  static get defaultOptions() {
+    return foundry.utils.mergeObject(super.defaultOptions, {
+      classes: ["dnd5e", "sheet", "actor", "vehicle", "spelljammer-ship"],
       template: `modules/${MODULE_ID}/templates/spelljammer-sheet.hbs`,
-      scrollable: [".sheet-body"]
-    }
-  };
+      width: 900,
+      height: 800,
+      tabs: [{ navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "bridge" }],
+      scrollY: [".sheet-body"],
+      resizable: true
+    });
+  }
 
   /** @override */
-  static TABS = {
-    bridge: {
-      id: "bridge",
-      group: "primary",
-      label: "Bridge Stations"
-    },
-    crew: {
-      id: "crew",
-      group: "primary",
-      label: "Crew & Cargo"
-    }
-  };
+  get template() {
+    return `modules/${MODULE_ID}/templates/spelljammer-sheet.hbs`;
+  }
 
   /* -------------------------------------------- */
   /*  Properties                                  */
@@ -102,12 +47,12 @@ export class SpelljammerShipSheet extends HandlebarsApplicationMixin(ActorSheetV
   }
 
   /* -------------------------------------------- */
-  /*  Rendering                                   */
+  /*  Data Preparation                            */
   /* -------------------------------------------- */
 
   /** @override */
-  async _prepareContext(options) {
-    const context = await super._prepareContext(options);
+  async getData(options = {}) {
+    const context = await super.getData(options);
 
     // Ensure spelljammer data is initialized
     await initializeSpelljammerData(this.actor);
@@ -143,17 +88,12 @@ export class SpelljammerShipSheet extends HandlebarsApplicationMixin(ActorSheetV
       collisionDamage: COLLISION_DAMAGE
     };
 
-    // Add tab configuration
-    context.tabs = this._getTabs();
+    // Standard actor data
+    context.actor = this.actor;
+    context.system = this.actor.system;
+    context.flags = this.actor.flags;
 
     return context;
-  }
-
-  /** @override */
-  _configureRenderOptions(options) {
-    super._configureRenderOptions(options);
-    if ( this.document.limited ) return;
-    options.parts = ["header", "tabs", "bridge"];
   }
 
   /* -------------------------------------------- */
@@ -320,73 +260,68 @@ export class SpelljammerShipSheet extends HandlebarsApplicationMixin(ActorSheetV
     return null;
   }
 
-  /**
-   * Get tabs configuration
-   */
-  _getTabs() {
-    return {
-      bridge: {
-        id: "bridge",
-        group: "primary",
-        icon: "fa-solid fa-ship",
-        label: "Bridge",
-        active: true,
-        cssClass: "active"
-      },
-      crew: {
-        id: "crew",
-        group: "primary",
-        icon: "fa-solid fa-users",
-        label: "Crew & Cargo",
-        active: false,
-        cssClass: ""
-      }
-    };
-  }
-
   /* -------------------------------------------- */
-  /*  Form Handling                               */
+  /*  Event Listeners                             */
   /* -------------------------------------------- */
 
   /** @override */
-  async _processFormData(event, form, formData) {
-    const data = foundry.utils.expandObject(formData.object);
+  activateListeners(html) {
+    super.activateListeners(html);
 
-    // Handle spelljammer-specific updates
-    if (data.spelljammer) {
-      await this.actor.update({
-        [`flags.${MODULE_ID}`]: foundry.utils.mergeObject(
-          this.spelljammerData,
-          data.spelljammer,
-          { recursive: true }
-        )
-      });
-    }
+    // Everything below here is only needed if the sheet is editable
+    if (!this.isEditable) return;
 
-    return super._processFormData(event, form, formData);
+    // Crew assignment
+    html.find('.crew-select').change(this._onAssignCrew.bind(this));
+    html.find('.remove-crew').click(this._onRemoveCrew.bind(this));
+
+    // Power modules
+    html.find('.power-module').click(this._onToggleModule.bind(this));
+
+    // Captain actions
+    html.find('.command-option input').change(this._onSelectCommand.bind(this));
+    html.find('[data-action="rollGrapple"]').click(this._onRollGrapple.bind(this));
+    html.find('[data-action="useToMe"]').click(this._onUseToMe.bind(this));
+    html.find('[data-action="rollInitiative"]').click(this._onRollInitiative.bind(this));
+
+    // Helmsman actions
+    html.find('[data-action="rollOverdrive"]').click(this._onRollOverdrive.bind(this));
+    html.find('[data-action="rollEmergencyBrake"]').click(this._onRollEmergencyBrake.bind(this));
+    html.find('[data-action="useEvade"]').click(this._onUseEvade.bind(this));
+    html.find('[data-action="useJamming"]').click(this._onUseJamming.bind(this));
+
+    // Gunner actions
+    html.find('[data-action="rollWeaponAttack"]').click(this._onRollWeaponAttack.bind(this));
+    html.find('[data-action="addWeapon"]').click(this._onAddWeapon.bind(this));
+    html.find('[data-action="deleteWeapon"]').click(this._onDeleteWeapon.bind(this));
+    html.find('.gunner-select').change(this._onAssignWeaponGunner.bind(this));
+
+    // Boatswain actions
+    html.find('[data-action="rollArcaneOverclock"]').click(this._onRollArcaneOverclock.bind(this));
+    html.find('[data-action="useEmergencyHotfix"]').click(this._onUseEmergencyHotfix.bind(this));
+
+    // General
+    html.find('[data-action="rollCollisionDamage"]').click(this._onRollCollisionDamage.bind(this));
+    html.find('.assigned-crew').click(this._onOpenCharacterSheet.bind(this));
   }
 
   /* -------------------------------------------- */
-  /*  Action Handlers - Crew Management           */
+  /*  Event Handlers - Crew Management            */
   /* -------------------------------------------- */
 
-  /**
-   * Handle assigning a character to a crew role
-   */
-  static async #onAssignCrew(event, target) {
-    const role = target.dataset.role;
-    const characterId = target.value;
+  async _onAssignCrew(event) {
+    event.preventDefault();
+    const element = event.currentTarget;
+    const role = element.dataset.role;
+    const characterId = element.value;
 
     if (!role) return;
 
     const assignments = foundry.utils.deepClone(this.spelljammerData.crewAssignments ?? {});
 
     if (role === "gunner") {
-      // Gunners are an array
-      const gunnerIndex = parseInt(target.dataset.gunnerIndex ?? 0);
+      const gunnerIndex = parseInt(element.dataset.gunnerIndex ?? 0);
       if (!Array.isArray(assignments.gunners)) assignments.gunners = [];
-
-      // Expand array if needed
       while (assignments.gunners.length <= gunnerIndex) {
         assignments.gunners.push(null);
       }
@@ -399,24 +334,23 @@ export class SpelljammerShipSheet extends HandlebarsApplicationMixin(ActorSheetV
       [`flags.${MODULE_ID}.crewAssignments`]: assignments
     });
 
-    // Emit socket for multiplayer sync
     game.socket.emit(`module.${MODULE_ID}`, {
       type: "refreshSheet",
       actorId: this.actor.id
     });
   }
 
-  /**
-   * Handle removing a character from a crew role
-   */
-  static async #onRemoveCrew(event, target) {
-    const role = target.dataset.role;
+  async _onRemoveCrew(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const element = event.currentTarget;
+    const role = element.dataset.role;
     if (!role) return;
 
     const assignments = foundry.utils.deepClone(this.spelljammerData.crewAssignments ?? {});
 
     if (role === "gunner") {
-      const gunnerIndex = parseInt(target.dataset.gunnerIndex ?? 0);
+      const gunnerIndex = parseInt(element.dataset.gunnerIndex ?? 0);
       if (Array.isArray(assignments.gunners) && assignments.gunners[gunnerIndex]) {
         assignments.gunners[gunnerIndex] = null;
       }
@@ -435,27 +369,27 @@ export class SpelljammerShipSheet extends HandlebarsApplicationMixin(ActorSheetV
   }
 
   /* -------------------------------------------- */
-  /*  Action Handlers - Power Modules             */
+  /*  Event Handlers - Power Modules              */
   /* -------------------------------------------- */
 
-  /**
-   * Handle toggling a power module on/off
-   */
-  static async #onToggleModule(event, target) {
-    const moduleId = target.dataset.moduleId;
+  async _onToggleModule(event) {
+    event.preventDefault();
+    const element = event.currentTarget;
+    const moduleId = element.dataset.moduleId;
     if (!moduleId || !POWER_MODULES[moduleId]) return;
+
+    // Don't toggle if clicking on HP input
+    if (event.target.classList.contains('module-hp-input')) return;
 
     const sjData = this.spelljammerData;
     const moduleState = sjData.powerModules?.[moduleId] ?? { active: false, hp: 10 };
     const moduleDef = POWER_MODULES[moduleId];
 
-    // Check if module is disabled (0 HP)
     if (moduleState.hp <= 0) {
       ui.notifications.warn("This module is damaged and cannot be activated!");
       return;
     }
 
-    // If activating, check power charge availability
     if (!moduleState.active) {
       const usedCharges = this._calculateUsedPowerCharges(sjData.powerModules);
       const maxCharges = this._getBoatswainProficiency(sjData.crewAssignments?.boatswain);
@@ -466,12 +400,10 @@ export class SpelljammerShipSheet extends HandlebarsApplicationMixin(ActorSheetV
       }
     }
 
-    // Toggle the module
     await this.actor.update({
       [`flags.${MODULE_ID}.powerModules.${moduleId}.active`]: !moduleState.active
     });
 
-    // If activating Hull Reinforcement, roll for temp HP
     if (!moduleState.active && moduleId === "hullReinforcement") {
       await SpelljammerRolls.rollHullReinforcement(this.actor);
     }
@@ -483,21 +415,17 @@ export class SpelljammerShipSheet extends HandlebarsApplicationMixin(ActorSheetV
   }
 
   /* -------------------------------------------- */
-  /*  Action Handlers - Captain                   */
+  /*  Event Handlers - Captain                    */
   /* -------------------------------------------- */
 
-  /**
-   * Handle selecting captain's command
-   */
-  static async #onSelectCommand(event, target) {
-    const command = target.dataset.command;
+  async _onSelectCommand(event) {
+    const command = event.currentTarget.value;
     if (!command) return;
 
     await this.actor.update({
       [`flags.${MODULE_ID}.captainCommand`]: command
     });
 
-    // Announce to chat
     const commandDescriptions = {
       gunner: "Offensive Order: A Gunner may make an additional weapon attack!",
       boatswain: "Engineering Order: The Boatswain may allocate one additional power charge!",
@@ -513,17 +441,13 @@ export class SpelljammerShipSheet extends HandlebarsApplicationMixin(ActorSheetV
     });
   }
 
-  /**
-   * Handle grapple roll
-   */
-  static async #onRollGrapple(event, target) {
+  async _onRollGrapple(event) {
+    event.preventDefault();
     await SpelljammerRolls.rollGrapple(this.actor, this.spelljammerData);
   }
 
-  /**
-   * Handle "To Me, Ocean Court" ability
-   */
-  static async #onUseToMe(event, target) {
+  async _onUseToMe(event) {
+    event.preventDefault();
     ChatMessage.create({
       speaker: ChatMessage.getSpeaker({ actor: this.actor }),
       content: `<div class="spelljammer-chat captain-ability">
@@ -534,35 +458,27 @@ export class SpelljammerShipSheet extends HandlebarsApplicationMixin(ActorSheetV
     });
   }
 
-  /**
-   * Handle rolling ship initiative
-   */
-  static async #onRollInitiative(event, target) {
+  async _onRollInitiative(event) {
+    event.preventDefault();
     await SpelljammerRolls.rollShipInitiative(this.actor, this.spelljammerData);
   }
 
   /* -------------------------------------------- */
-  /*  Action Handlers - Helmsman                  */
+  /*  Event Handlers - Helmsman                   */
   /* -------------------------------------------- */
 
-  /**
-   * Handle overdrive roll
-   */
-  static async #onRollOverdrive(event, target) {
+  async _onRollOverdrive(event) {
+    event.preventDefault();
     await SpelljammerRolls.rollOverdrive(this.actor, this.spelljammerData);
   }
 
-  /**
-   * Handle emergency brake roll
-   */
-  static async #onRollEmergencyBrake(event, target) {
+  async _onRollEmergencyBrake(event) {
+    event.preventDefault();
     await SpelljammerRolls.rollEmergencyBrake(this.actor, this.spelljammerData);
   }
 
-  /**
-   * Handle using Evade maneuver
-   */
-  static async #onUseEvade(event, target) {
+  async _onUseEvade(event) {
+    event.preventDefault();
     const sjData = this.spelljammerData;
     const helmsman = sjData.crewAssignments?.helmsman;
     if (!helmsman) {
@@ -592,10 +508,8 @@ export class SpelljammerShipSheet extends HandlebarsApplicationMixin(ActorSheetV
     });
   }
 
-  /**
-   * Handle using Jamming maneuver
-   */
-  static async #onUseJamming(event, target) {
+  async _onUseJamming(event) {
+    event.preventDefault();
     ChatMessage.create({
       speaker: ChatMessage.getSpeaker({ actor: this.actor }),
       content: `<div class="spelljammer-chat helmsman-ability">
@@ -606,42 +520,21 @@ export class SpelljammerShipSheet extends HandlebarsApplicationMixin(ActorSheetV
     });
   }
 
-  /**
-   * Handle velocity updates
-   */
-  static async #onUpdateVelocity(event, target) {
-    const field = target.dataset.field;
-    const value = target.value;
-
-    if (field === "direction") {
-      await this.actor.update({
-        [`flags.${MODULE_ID}.velocity.direction`]: value
-      });
-    } else if (field === "current") {
-      await this.actor.update({
-        [`flags.${MODULE_ID}.velocity.current`]: parseInt(value) || 0
-      });
-    }
-  }
-
   /* -------------------------------------------- */
-  /*  Action Handlers - Gunner                    */
+  /*  Event Handlers - Gunner                     */
   /* -------------------------------------------- */
 
-  /**
-   * Handle weapon attack roll
-   */
-  static async #onRollWeaponAttack(event, target) {
-    const weaponIndex = parseInt(target.dataset.weaponIndex);
+  async _onRollWeaponAttack(event) {
+    event.preventDefault();
+    const weaponIndex = parseInt(event.currentTarget.dataset.weaponIndex);
     await SpelljammerRolls.rollWeaponAttack(this.actor, this.spelljammerData, weaponIndex);
   }
 
-  /**
-   * Handle assigning a gunner to a weapon
-   */
-  static async #onAssignWeaponGunner(event, target) {
-    const weaponIndex = parseInt(target.dataset.weaponIndex);
-    const gunnerIndex = target.value === "" ? null : parseInt(target.value);
+  async _onAssignWeaponGunner(event) {
+    event.preventDefault();
+    const element = event.currentTarget;
+    const weaponIndex = parseInt(element.dataset.weaponIndex);
+    const gunnerIndex = element.value === "" ? null : parseInt(element.value);
 
     const weapons = foundry.utils.deepClone(this.spelljammerData.weapons ?? []);
     if (weapons[weaponIndex]) {
@@ -652,10 +545,8 @@ export class SpelljammerShipSheet extends HandlebarsApplicationMixin(ActorSheetV
     }
   }
 
-  /**
-   * Handle adding a new weapon
-   */
-  static async #onAddWeapon(event, target) {
+  async _onAddWeapon(event) {
+    event.preventDefault();
     const weapons = foundry.utils.deepClone(this.spelljammerData.weapons ?? []);
     weapons.push({
       name: "New Weapon",
@@ -675,11 +566,9 @@ export class SpelljammerShipSheet extends HandlebarsApplicationMixin(ActorSheetV
     });
   }
 
-  /**
-   * Handle deleting a weapon
-   */
-  static async #onDeleteWeapon(event, target) {
-    const weaponIndex = parseInt(target.dataset.weaponIndex);
+  async _onDeleteWeapon(event) {
+    event.preventDefault();
+    const weaponIndex = parseInt(event.currentTarget.dataset.weaponIndex);
     const weapons = foundry.utils.deepClone(this.spelljammerData.weapons ?? []);
 
     if (weapons[weaponIndex]) {
@@ -691,13 +580,11 @@ export class SpelljammerShipSheet extends HandlebarsApplicationMixin(ActorSheetV
   }
 
   /* -------------------------------------------- */
-  /*  Action Handlers - Boatswain                 */
+  /*  Event Handlers - Boatswain                  */
   /* -------------------------------------------- */
 
-  /**
-   * Handle Arcane Overclock
-   */
-  static async #onRollArcaneOverclock(event, target) {
+  async _onRollArcaneOverclock(event) {
+    event.preventDefault();
     const buttons = {};
     for (let i = 1; i <= 9; i++) {
       buttons[`level${i}`] = {
@@ -725,17 +612,8 @@ export class SpelljammerShipSheet extends HandlebarsApplicationMixin(ActorSheetV
     }
   }
 
-  /**
-   * Handle Hull Reinforcement roll
-   */
-  static async #onRollHullReinforcement(event, target) {
-    await SpelljammerRolls.rollHullReinforcement(this.actor);
-  }
-
-  /**
-   * Handle Emergency Hotfix
-   */
-  static async #onUseEmergencyHotfix(event, target) {
+  async _onUseEmergencyHotfix(event) {
+    event.preventDefault();
     const currentHp = this.actor.system.attributes?.hp?.value ?? 0;
     const maxHp = this.actor.system.attributes?.hp?.max ?? 1;
 
@@ -755,14 +633,12 @@ export class SpelljammerShipSheet extends HandlebarsApplicationMixin(ActorSheetV
   }
 
   /* -------------------------------------------- */
-  /*  Action Handlers - General                   */
+  /*  Event Handlers - General                    */
   /* -------------------------------------------- */
 
-  /**
-   * Handle collision damage roll
-   */
-  static async #onRollCollisionDamage(event, target) {
-    const size = target.dataset.size ?? "2x2";
+  async _onRollCollisionDamage(event) {
+    event.preventDefault();
+    const size = event.currentTarget.dataset.size ?? "2x2";
     const damageFormula = COLLISION_DAMAGE[size] ?? "3d10";
 
     const roll = await new Roll(damageFormula).evaluate();
@@ -776,16 +652,38 @@ export class SpelljammerShipSheet extends HandlebarsApplicationMixin(ActorSheetV
     });
   }
 
-  /**
-   * Handle opening a crew member's character sheet
-   */
-  static async #onOpenCharacterSheet(event, target) {
-    const actorId = target.dataset.actorId;
+  async _onOpenCharacterSheet(event) {
+    event.preventDefault();
+    const actorId = event.currentTarget.dataset.actorId;
     if (!actorId) return;
 
     const actor = game.actors.get(actorId);
     if (actor) {
       actor.sheet.render(true);
     }
+  }
+
+  /* -------------------------------------------- */
+  /*  Form Submission                             */
+  /* -------------------------------------------- */
+
+  /** @override */
+  async _updateObject(event, formData) {
+    const expanded = foundry.utils.expandObject(formData);
+
+    // Handle spelljammer-specific updates
+    if (expanded.spelljammer) {
+      await this.actor.update({
+        [`flags.${MODULE_ID}`]: foundry.utils.mergeObject(
+          this.spelljammerData,
+          expanded.spelljammer,
+          { recursive: true }
+        )
+      });
+      delete expanded.spelljammer;
+    }
+
+    // Handle standard actor updates
+    return this.actor.update(expanded);
   }
 }
