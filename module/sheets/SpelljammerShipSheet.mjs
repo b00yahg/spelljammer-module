@@ -3,7 +3,7 @@
  * Uses ApplicationV2 / DocumentSheetV2 framework
  */
 
-const { DocumentSheetV2, HandlebarsApplicationMixin } = foundry.applications.api;
+const { HandlebarsApplicationMixin } = foundry.applications.api;
 const { ActorSheetV2 } = dnd5e.applications.actor;
 
 import {
@@ -18,7 +18,7 @@ import {
 } from "../../spelljammer.mjs";
 import { SpelljammerRolls } from "../helpers/rolls.mjs";
 
-export class SpelljammerShipSheet extends ActorSheetV2 {
+export class SpelljammerShipSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   /** @override */
   static DEFAULT_OPTIONS = {
