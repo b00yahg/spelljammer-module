@@ -12,25 +12,27 @@
     <h3 class="section-subtitle">Assigned Gunners</h3>
     <div class="gunner-list">
       {{#each spelljammer.resolvedCrew.gunners as |gunner index|}}
-        <div class="assigned-crew gunner-slot" data-action="openCharacterSheet" data-actor-id="{{gunner.id}}">
-          <span class="gunner-number">{{math index "+" 1}}</span>
-          <img src="{{gunner.img}}" alt="{{gunner.name}}" class="crew-portrait small" />
-          <div class="crew-info">
-            <span class="crew-name">{{gunner.name}}</span>
-            <span class="crew-stats">
-              DEX {{sjc-formatModifier gunner.dexMod}} |
-              Prof +{{gunner.proficiency}}
-            </span>
+        {{#if gunner}}
+          <div class="assigned-crew gunner-slot" data-action="openCharacterSheet" data-actor-id="{{gunner.id}}">
+            <span class="gunner-number">{{math index "+" 1}}</span>
+            <img src="{{gunner.img}}" alt="{{gunner.name}}" class="crew-portrait small" />
+            <div class="crew-info">
+              <span class="crew-name">{{gunner.name}}</span>
+              <span class="crew-stats">
+                DEX {{sjc-formatModifier gunner.dexMod}} |
+                Prof +{{gunner.proficiency}}
+              </span>
+            </div>
+            <button type="button" class="remove-crew" data-action="removeCrew" data-role="gunner" data-gunner-index="{{index}}">
+              <i class="fas fa-times"></i>
+            </button>
           </div>
-          <button type="button" class="remove-crew" data-action="removeCrew" data-role="gunner" data-gunner-index="{{index}}">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-      {{else}}
-        <div class="no-crew">
-          <i class="fas fa-user-plus"></i>
-          <span>No Gunners Assigned</span>
-        </div>
+        {{else}}
+          <div class="gunner-slot empty">
+            <span class="gunner-number">{{math index "+" 1}}</span>
+            <span class="no-crew-text">Unassigned</span>
+          </div>
+        {{/if}}
       {{/each}}
     </div>
   </div>
@@ -73,11 +75,11 @@
         <div class="weapon-col actions">Actions</div>
       </div>
 
-      {{#each spelljammer.weaponsWithStats as |weapon|}}
-        <div class="weapon-row {{#if (lte weapon.hp 0)}}disabled{{/if}}">
+      {{!-- Use Item-based weapons --}}
+      {{#each spelljammer.shipWeaponItems as |weapon|}}
+        <div class="weapon-row {{#if weapon.disabled}}disabled{{/if}}" data-item-id="{{weapon.id}}">
           <div class="weapon-col name">
-            <input type="text" name="spelljammer.weapons.{{weapon.index}}.name"
-                   value="{{weapon.name}}" class="weapon-name-input" />
+            <span class="weapon-name">{{weapon.name}}</span>
             {{#if weapon.properties.length}}
               <div class="weapon-properties">
                 {{#each weapon.properties as |prop|}}
@@ -87,76 +89,61 @@
             {{/if}}
           </div>
           <div class="weapon-col range">
-            <input type="text" name="spelljammer.weapons.{{weapon.index}}.range"
-                   value="{{weapon.range}}" class="weapon-range-input" />
+            <span>{{weapon.range}} ft.</span>
           </div>
           <div class="weapon-col attack">
             <span class="attack-bonus">{{weapon.attackBonusFormatted}}</span>
           </div>
           <div class="weapon-col damage">
-            <input type="text" name="spelljammer.weapons.{{weapon.index}}.damage"
-                   value="{{weapon.damage}}" class="weapon-damage-input" />
-            <select name="spelljammer.weapons.{{weapon.index}}.damageType" class="damage-type-select">
-              <option value="bludgeoning" {{#if (sjc-eq weapon.damageType "bludgeoning")}}selected{{/if}}>bludg.</option>
-              <option value="piercing" {{#if (sjc-eq weapon.damageType "piercing")}}selected{{/if}}>pierc.</option>
-              <option value="slashing" {{#if (sjc-eq weapon.damageType "slashing")}}selected{{/if}}>slash.</option>
-              <option value="fire" {{#if (sjc-eq weapon.damageType "fire")}}selected{{/if}}>fire</option>
-              <option value="cold" {{#if (sjc-eq weapon.damageType "cold")}}selected{{/if}}>cold</option>
-              <option value="lightning" {{#if (sjc-eq weapon.damageType "lightning")}}selected{{/if}}>lightning</option>
-              <option value="radiant" {{#if (sjc-eq weapon.damageType "radiant")}}selected{{/if}}>radiant</option>
-              <option value="necrotic" {{#if (sjc-eq weapon.damageType "necrotic")}}selected{{/if}}>necrotic</option>
-              <option value="force" {{#if (sjc-eq weapon.damageType "force")}}selected{{/if}}>force</option>
-            </select>
+            <span>{{weapon.damage}} {{weapon.damageType}}</span>
           </div>
           <div class="weapon-col position">
-            <select name="spelljammer.weapons.{{weapon.index}}.position" class="position-select">
-              <option value="bow" {{#if (sjc-eq weapon.position "bow")}}selected{{/if}}>Bow (45°)</option>
-              <option value="stern" {{#if (sjc-eq weapon.position "stern")}}selected{{/if}}>Stern (45°)</option>
-              <option value="port" {{#if (sjc-eq weapon.position "port")}}selected{{/if}}>Port (90°)</option>
-              <option value="starboard" {{#if (sjc-eq weapon.position "starboard")}}selected{{/if}}>Starboard (90°)</option>
-              <option value="broadside" {{#if (sjc-eq weapon.position "broadside")}}selected{{/if}}>Broadside (90°)</option>
-            </select>
+            <span>{{weapon.position}} ({{weapon.firingArc}}°)</span>
           </div>
           <div class="weapon-col hp">
-            <input type="number" name="spelljammer.weapons.{{weapon.index}}.hp"
-                   value="{{weapon.hp}}" min="0" max="{{weapon.maxHp}}" class="hp-input" />
-            <span class="hp-max">/{{weapon.maxHp}}</span>
+            <span>{{weapon.hp}}/{{weapon.maxHp}}</span>
           </div>
           <div class="weapon-col gunner">
-            <select data-action="assignWeaponGunner" data-weapon-index="{{weapon.index}}" class="gunner-select">
+            <select data-item-id="{{weapon.id}}" class="gunner-select">
               <option value="">Unassigned</option>
               {{#each ../spelljammer.resolvedCrew.gunners as |g gIndex|}}
-                <option value="{{gIndex}}" {{#if (sjc-eq gIndex ../weapon.assignedGunner)}}selected{{/if}}>
-                  {{g.name}}
-                </option>
+                {{#if g}}
+                  <option value="{{gIndex}}" {{#if (sjc-eq gIndex ../weapon.assignedGunner)}}selected{{/if}}>
+                    {{g.name}}
+                  </option>
+                {{/if}}
               {{/each}}
             </select>
           </div>
           <div class="weapon-col actions">
             <button type="button" class="roll-button tiny"
-                    data-action="rollWeaponAttack" data-weapon-index="{{weapon.index}}"
-                    {{#if (lte weapon.hp 0)}}disabled{{/if}}>
+                    data-action="rollWeaponAttack" data-item-id="{{weapon.id}}"
+                    {{#if weapon.disabled}}disabled{{/if}}>
               <i class="fas fa-dice-d20"></i>
             </button>
-            <button type="button" class="delete-button tiny" data-action="deleteWeapon" data-weapon-index="{{weapon.index}}">
+            <button type="button" class="delete-button tiny" data-action="deleteWeapon" data-item-id="{{weapon.id}}">
               <i class="fas fa-trash"></i>
             </button>
           </div>
         </div>
       {{else}}
         <div class="no-weapons">
-          <p>No weapons installed. Click "Add Weapon" to add ship weapons.</p>
+          <p>No weapons installed. Click "Add Weapon" or drag weapon items here.</p>
         </div>
       {{/each}}
     </div>
 
     {{!-- Weapons Array Bonus Notice --}}
-    {{#if spelljammer.powerModules.weaponsArray.active}}
-      <div class="power-bonus-notice">
-        <i class="fas fa-bolt"></i>
-        <span>Weapons Array Active: +1d6 damage to all weapon attacks!</span>
-      </div>
-    {{/if}}
+    {{#each spelljammer.powerModuleItems as |mod|}}
+      {{#if (sjc-eq mod.moduleId "weaponsArray")}}
+        {{#if mod.active}}
+          <div class="power-bonus-notice">
+            <i class="fas fa-bolt"></i>
+            <span>Weapons Array Active: +1d6 damage to all weapon attacks!</span>
+          </div>
+        {{/if}}
+      {{/if}}
+    {{/each}}
   </div>
 
   {{!-- Special Actions --}}

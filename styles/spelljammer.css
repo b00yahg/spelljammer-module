@@ -1475,6 +1475,23 @@
   font-weight: bold;
 }
 
+.gunner-slot.empty {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: var(--sjc-bg-secondary);
+  border: 1px dashed var(--sjc-border);
+  border-radius: 6px;
+  opacity: 0.6;
+}
+
+.gunner-slot .no-crew-text {
+  font-size: 0.85rem;
+  color: var(--sjc-text-secondary);
+  font-style: italic;
+}
+
 /* -------------------------------------------- */
 /*  QoL Improvements                            */
 /* -------------------------------------------- */

@@ -11,7 +11,13 @@ import {
   OVERDRIVE_DC_TABLE,
   getDefaultSpelljammerData,
   initializeSpelljammerData,
-  COLLISION_DAMAGE
+  COLLISION_DAMAGE,
+  getShipWeapons,
+  getPowerModules,
+  addDefaultPowerModules,
+  addShipWeapon,
+  togglePowerModule,
+  createShipWeaponData
 } from "../../spelljammer.mjs";
 import { SpelljammerRolls } from "../helpers/rolls.mjs";
 
@@ -58,7 +64,14 @@ export class SpelljammerShipSheet extends ActorSheet {
     // Ensure spelljammer data is initialized
     await initializeSpelljammerData(this.actor);
 
+    // Ensure default power modules exist as Items
+    await addDefaultPowerModules(this.actor);
+
     const sjData = this.spelljammerData;
+
+    // Get Items-based weapons and modules
+    const shipWeapons = getShipWeapons(this.actor);
+    const powerModuleItems = getPowerModules(this.actor);
 
     // Add spelljammer-specific context
     context.spelljammer = {
@@ -67,20 +80,24 @@ export class SpelljammerShipSheet extends ActorSheet {
       directions: DIRECTIONS,
       powerModuleDefinitions: POWER_MODULES,
       crewRoles: CREW_ROLES,
-      // Power module state with definitions
-      powerModulesWithDefs: this._getPowerModulesWithDefinitions(sjData),
+      // Power modules from Items
+      powerModuleItems: this._preparePowerModuleItems(powerModuleItems),
+      // Ship weapons from Items
+      shipWeaponItems: this._prepareShipWeaponItems(shipWeapons, sjData),
+      // Legacy support - Power module state with definitions (for templates)
+      powerModulesWithDefs: this._getPowerModulesFromItems(powerModuleItems),
       // Crew assignments resolved to actors
       resolvedCrew: await this._resolveCrewAssignments(sjData.crewAssignments),
       // Available characters for assignment
       availableCharacters: this._getAvailableCharacters(),
-      // Total power charges used
-      usedPowerCharges: this._calculateUsedPowerCharges(sjData.powerModules),
+      // Total power charges used (from Items)
+      usedPowerCharges: this._calculateUsedPowerChargesFromItems(powerModuleItems),
       // Boatswain's max charges
       maxPowerCharges: this._getBoatswainProficiency(sjData.crewAssignments?.boatswain),
       // Overdrive DC based on current speed
       overdriveDC: this._getOverdriveDC(sjData.velocity?.current ?? 0),
-      // Weapons with gunner stats
-      weaponsWithStats: this._getWeaponsWithStats(sjData),
+      // Weapons with gunner stats (from Items)
+      weaponsWithStats: this._getWeaponsWithStatsFromItems(shipWeapons, sjData),
       // Is user controlling a crew member?
       userCrewRole: this._getUserCrewRole(sjData.crewAssignments),
       // Module settings
@@ -93,6 +110,7 @@ export class SpelljammerShipSheet extends ActorSheet {
     context.actor = this.actor;
     context.system = this.actor.system;
     context.flags = this.actor.flags;
+    context.items = this.actor.items;
 
     return context;
   }
@@ -123,7 +141,7 @@ export class SpelljammerShipSheet extends ActorSheet {
     const resolved = {
       captain: null,
       helmsman: null,
-      gunners: [],
+      gunners: [null, null, null, null], // Maintain 4 positions
       boatswain: null
     };
 
@@ -147,18 +165,21 @@ export class SpelljammerShipSheet extends ActorSheet {
       }
     }
 
-    // Resolve gunners (array)
+    // Resolve gunners (maintain index positions!)
     if (Array.isArray(assignments.gunners)) {
-      for (const gunnerId of assignments.gunners) {
-        const actor = game.actors.get(gunnerId);
-        if (actor) {
-          resolved.gunners.push({
-            id: actor.id,
-            name: actor.name,
-            img: actor.img,
-            proficiency: actor.system.attributes?.prof ?? 2,
-            dexMod: actor.system.abilities?.dex?.mod ?? 0
-          });
+      for (let i = 0; i < assignments.gunners.length; i++) {
+        const gunnerId = assignments.gunners[i];
+        if (gunnerId) {
+          const actor = game.actors.get(gunnerId);
+          if (actor) {
+            resolved.gunners[i] = {
+              id: actor.id,
+              name: actor.name,
+              img: actor.img,
+              proficiency: actor.system.attributes?.prof ?? 2,
+              dexMod: actor.system.abilities?.dex?.mod ?? 0
+            };
+          }
         }
       }
     }
@@ -262,6 +283,126 @@ export class SpelljammerShipSheet extends ActorSheet {
   }
 
   /* -------------------------------------------- */
+  /*  Item-Based Helper Methods                   */
+  /* -------------------------------------------- */
+
+  /**
+   * Prepare power module Items for display
+   */
+  _preparePowerModuleItems(moduleItems) {
+    return moduleItems.map(item => {
+      const flags = item.flags?.[MODULE_ID] ?? {};
+      const moduleDef = POWER_MODULES[flags.moduleId] ?? {};
+      return {
+        id: item.id,
+        name: item.name,
+        img: item.img,
+        moduleId: flags.moduleId,
+        cost: flags.cost ?? moduleDef.cost ?? 1,
+        description: moduleDef.description ?? "",
+        effect: flags.effect ?? moduleDef.effect,
+        effectValue: flags.effectValue ?? moduleDef.effectValue,
+        active: flags.active ?? false,
+        hp: item.system.hp?.value ?? 10,
+        maxHp: item.system.hp?.max ?? 10,
+        disabled: (item.system.hp?.value ?? 10) <= 0
+      };
+    });
+  }
+
+  /**
+   * Prepare ship weapon Items for display
+   */
+  _prepareShipWeaponItems(weaponItems, sjData) {
+    return weaponItems.map((item, index) => {
+      const flags = item.flags?.[MODULE_ID] ?? {};
+      const assignedGunnerIdx = flags.assignedGunner;
+
+      let attackBonus = 0;
+      let gunnerName = "Unassigned";
+
+      if (assignedGunnerIdx !== null && assignedGunnerIdx !== undefined && sjData.crewAssignments?.gunners) {
+        const gunnerId = sjData.crewAssignments.gunners[assignedGunnerIdx];
+        if (gunnerId) {
+          const gunner = game.actors.get(gunnerId);
+          if (gunner) {
+            const dexMod = gunner.system.abilities?.dex?.mod ?? 0;
+            const prof = gunner.system.attributes?.prof ?? 2;
+            attackBonus = dexMod + prof;
+            gunnerName = gunner.name;
+          }
+        }
+      }
+
+      // Get damage from Item
+      const damageParts = item.system.damage?.parts ?? [];
+      const damage = damageParts[0]?.[0] ?? "2d10";
+      const damageType = damageParts[0]?.[1] ?? "bludgeoning";
+
+      return {
+        id: item.id,
+        name: item.name,
+        img: item.img,
+        damage,
+        damageType,
+        range: `${item.system.range?.value ?? 300}/${item.system.range?.long ?? 900}`,
+        position: flags.position ?? "broadside",
+        firingArc: flags.firingArc ?? 90,
+        properties: flags.specialProperties ?? [],
+        hp: item.system.hp?.value ?? 10,
+        maxHp: item.system.hp?.max ?? 10,
+        assignedGunner: assignedGunnerIdx,
+        index,
+        attackBonus,
+        attackBonusFormatted: attackBonus >= 0 ? `+${attackBonus}` : `${attackBonus}`,
+        gunnerName,
+        disabled: (item.system.hp?.value ?? 10) <= 0
+      };
+    });
+  }
+
+  /**
+   * Get power modules from Items in legacy format for templates
+   */
+  _getPowerModulesFromItems(moduleItems) {
+    return moduleItems.map(item => {
+      const flags = item.flags?.[MODULE_ID] ?? {};
+      const moduleDef = POWER_MODULES[flags.moduleId] ?? {};
+      return {
+        ...moduleDef,
+        id: flags.moduleId,
+        itemId: item.id,
+        name: item.name,
+        active: flags.active ?? false,
+        hp: item.system.hp?.value ?? 10,
+        maxHp: item.system.hp?.max ?? 10,
+        disabled: (item.system.hp?.value ?? 10) <= 0
+      };
+    });
+  }
+
+  /**
+   * Calculate used power charges from Item-based modules
+   */
+  _calculateUsedPowerChargesFromItems(moduleItems) {
+    return moduleItems.reduce((total, item) => {
+      const flags = item.flags?.[MODULE_ID] ?? {};
+      const hp = item.system.hp?.value ?? 10;
+      if (flags.active && hp > 0) {
+        return total + (flags.cost ?? 1);
+      }
+      return total;
+    }, 0);
+  }
+
+  /**
+   * Get weapons with stats from Items
+   */
+  _getWeaponsWithStatsFromItems(weaponItems, sjData) {
+    return this._prepareShipWeaponItems(weaponItems, sjData);
+  }
+
+  /* -------------------------------------------- */
   /*  Event Listeners                             */
   /* -------------------------------------------- */
 
@@ -332,12 +473,16 @@ export class SpelljammerShipSheet extends ActorSheet {
 
     const assignments = foundry.utils.deepClone(this.spelljammerData.crewAssignments ?? {});
 
+    // Ensure gunners array exists with proper length
+    if (!Array.isArray(assignments.gunners)) {
+      assignments.gunners = [null, null, null, null];
+    }
+    while (assignments.gunners.length < 4) {
+      assignments.gunners.push(null);
+    }
+
     if (role === "gunner") {
       const gunnerIndex = parseInt(element.dataset.gunnerIndex ?? 0);
-      if (!Array.isArray(assignments.gunners)) assignments.gunners = [];
-      while (assignments.gunners.length <= gunnerIndex) {
-        assignments.gunners.push(null);
-      }
       assignments.gunners[gunnerIndex] = characterId || null;
     } else {
       assignments[role] = characterId || null;
@@ -347,10 +492,14 @@ export class SpelljammerShipSheet extends ActorSheet {
       [`flags.${MODULE_ID}.crewAssignments`]: assignments
     });
 
+    // Notify other clients
     game.socket.emit(`module.${MODULE_ID}`, {
       type: "refreshSheet",
       actorId: this.actor.id
     });
+
+    // Force re-render
+    this.render(false);
   }
 
   async _onRemoveCrew(event) {
@@ -362,11 +511,14 @@ export class SpelljammerShipSheet extends ActorSheet {
 
     const assignments = foundry.utils.deepClone(this.spelljammerData.crewAssignments ?? {});
 
+    // Ensure gunners array exists
+    if (!Array.isArray(assignments.gunners)) {
+      assignments.gunners = [null, null, null, null];
+    }
+
     if (role === "gunner") {
       const gunnerIndex = parseInt(element.dataset.gunnerIndex ?? 0);
-      if (Array.isArray(assignments.gunners) && assignments.gunners[gunnerIndex]) {
-        assignments.gunners[gunnerIndex] = null;
-      }
+      assignments.gunners[gunnerIndex] = null;
     } else {
       assignments[role] = null;
     }
@@ -375,10 +527,14 @@ export class SpelljammerShipSheet extends ActorSheet {
       [`flags.${MODULE_ID}.crewAssignments`]: assignments
     });
 
+    // Notify other clients
     game.socket.emit(`module.${MODULE_ID}`, {
       type: "refreshSheet",
       actorId: this.actor.id
     });
+
+    // Force re-render
+    this.render(false);
   }
 
   /* -------------------------------------------- */
@@ -388,11 +544,63 @@ export class SpelljammerShipSheet extends ActorSheet {
   async _onToggleModule(event) {
     event.preventDefault();
     const element = event.currentTarget;
-    const moduleId = element.dataset.moduleId;
-    if (!moduleId || !POWER_MODULES[moduleId]) return;
 
     // Don't toggle if clicking on HP input
     if (event.target.classList.contains('module-hp-input')) return;
+
+    // Get the item ID from the element (for Item-based modules)
+    const itemId = element.dataset.itemId;
+    const moduleId = element.dataset.moduleId;
+
+    // Item-based module toggle
+    if (itemId) {
+      const item = this.actor.items.get(itemId);
+      if (!item) return;
+
+      const flags = item.flags?.[MODULE_ID] ?? {};
+      const hp = item.system.hp?.value ?? 10;
+      const cost = flags.cost ?? 1;
+
+      if (hp <= 0) {
+        ui.notifications.warn("This module is damaged and cannot be activated!");
+        return;
+      }
+
+      const isCurrentlyActive = flags.active ?? false;
+
+      if (!isCurrentlyActive) {
+        // Check power charges
+        const moduleItems = getPowerModules(this.actor);
+        const usedCharges = this._calculateUsedPowerChargesFromItems(moduleItems);
+        const maxCharges = this._getBoatswainProficiency(this.spelljammerData.crewAssignments?.boatswain);
+
+        if (usedCharges + cost > maxCharges) {
+          ui.notifications.warn("Not enough power charges available!");
+          return;
+        }
+      }
+
+      await item.update({
+        [`flags.${MODULE_ID}.active`]: !isCurrentlyActive
+      });
+
+      // Special effect: Hull Reinforcement grants temp HP
+      if (!isCurrentlyActive && flags.moduleId === "hullReinforcement") {
+        await SpelljammerRolls.rollHullReinforcement(this.actor);
+      }
+
+      // Notify and render
+      game.socket.emit(`module.${MODULE_ID}`, {
+        type: "refreshSheet",
+        actorId: this.actor.id
+      });
+
+      this.render(false);
+      return;
+    }
+
+    // Legacy flag-based module toggle (for backwards compatibility)
+    if (!moduleId || !POWER_MODULES[moduleId]) return;
 
     const sjData = this.spelljammerData;
     const moduleState = sjData.powerModules?.[moduleId] ?? { active: false, hp: 10 };
@@ -425,6 +633,8 @@ export class SpelljammerShipSheet extends ActorSheet {
       type: "refreshSheet",
       actorId: this.actor.id
     });
+
+    this.render(false);
   }
 
   /* -------------------------------------------- */
@@ -539,16 +749,101 @@ export class SpelljammerShipSheet extends ActorSheet {
 
   async _onRollWeaponAttack(event) {
     event.preventDefault();
-    const weaponIndex = parseInt(event.currentTarget.dataset.weaponIndex);
+    const element = event.currentTarget;
+    const itemId = element.dataset.itemId;
+
+    // Item-based weapon attack
+    if (itemId) {
+      const item = this.actor.items.get(itemId);
+      if (!item) return;
+
+      const flags = item.flags?.[MODULE_ID] ?? {};
+      const assignedGunnerIdx = flags.assignedGunner;
+      const sjData = this.spelljammerData;
+
+      // Get gunner stats
+      let attackBonus = 0;
+      let gunnerName = "Unassigned";
+      let gunnerActor = null;
+
+      if (assignedGunnerIdx !== null && assignedGunnerIdx !== undefined && sjData.crewAssignments?.gunners) {
+        const gunnerId = sjData.crewAssignments.gunners[assignedGunnerIdx];
+        if (gunnerId) {
+          gunnerActor = game.actors.get(gunnerId);
+          if (gunnerActor) {
+            const dexMod = gunnerActor.system.abilities?.dex?.mod ?? 0;
+            const prof = gunnerActor.system.attributes?.prof ?? 2;
+            attackBonus = dexMod + prof;
+            gunnerName = gunnerActor.name;
+          }
+        }
+      }
+
+      // Get damage info
+      const damageParts = item.system.damage?.parts ?? [];
+      const baseDamage = damageParts[0]?.[0] ?? "2d10";
+      const damageType = damageParts[0]?.[1] ?? "bludgeoning";
+
+      // Check for Weapons Array bonus
+      const moduleItems = getPowerModules(this.actor);
+      const weaponsArray = moduleItems.find(m => m.flags?.[MODULE_ID]?.moduleId === "weaponsArray");
+      const hasWeaponsArrayBonus = weaponsArray?.flags?.[MODULE_ID]?.active && (weaponsArray.system.hp?.value ?? 10) > 0;
+
+      // Roll attack
+      const roll = await new Roll("1d20 + @bonus", { bonus: attackBonus }).evaluate();
+      await roll.toMessage({
+        speaker: ChatMessage.getSpeaker({ actor: this.actor }),
+        flavor: `<div class="spelljammer-chat weapon-attack">
+          <h3>${item.name}</h3>
+          <p><strong>Gunner:</strong> ${gunnerName}</p>
+          <p><strong>Attack Roll:</strong></p>
+        </div>`
+      });
+
+      // Create damage roll button
+      const damageFormula = hasWeaponsArrayBonus ? `${baseDamage} + 1d6` : baseDamage;
+      const damageContent = `<div class="spelljammer-chat weapon-damage">
+        <p><strong>Damage:</strong> ${damageFormula} ${damageType}</p>
+        ${hasWeaponsArrayBonus ? '<p class="bonus-note"><i class="fas fa-bolt"></i> Weapons Array: +1d6 damage</p>' : ''}
+        <button class="spelljammer-damage-roll" data-formula="${damageFormula}" data-type="${damageType}">
+          <i class="fas fa-dice-d20"></i> Roll Damage
+        </button>
+      </div>`;
+
+      await ChatMessage.create({
+        speaker: ChatMessage.getSpeaker({ actor: this.actor }),
+        content: damageContent
+      });
+
+      return;
+    }
+
+    // Legacy flag-based weapon attack
+    const weaponIndex = parseInt(element.dataset.weaponIndex);
     await SpelljammerRolls.rollWeaponAttack(this.actor, this.spelljammerData, weaponIndex);
   }
 
   async _onAssignWeaponGunner(event) {
     event.preventDefault();
     const element = event.currentTarget;
-    const weaponIndex = parseInt(element.dataset.weaponIndex);
+    const itemId = element.dataset.itemId;
     const gunnerIndex = element.value === "" ? null : parseInt(element.value);
 
+    // Item-based weapon
+    if (itemId) {
+      const item = this.actor.items.get(itemId);
+      if (!item) return;
+
+      await item.update({
+        [`flags.${MODULE_ID}.assignedGunner`]: gunnerIndex
+      });
+
+      this.render(false);
+      return;
+    }
+
+    // Legacy flag-based weapon
+    const weaponIndex = parseInt(element.dataset.weaponIndex);
     const weapons = foundry.utils.deepClone(this.spelljammerData.weapons ?? []);
     if (weapons[weaponIndex]) {
       weapons[weaponIndex].assignedGunner = gunnerIndex;
@@ -560,8 +855,9 @@ export class SpelljammerShipSheet extends ActorSheet {
 
   async _onAddWeapon(event) {
     event.preventDefault();
-    const weapons = foundry.utils.deepClone(this.spelljammerData.weapons ?? []);
-    weapons.push({
+
+    // Create weapon as an Item
+    await addShipWeapon(this.actor, {
       name: "New Weapon",
       damage: "2d10",
       damageType: "bludgeoning",
@@ -570,18 +866,37 @@ export class SpelljammerShipSheet extends ActorSheet {
       firingArc: 90,
       properties: [],
       hp: 10,
-      maxHp: 10,
-      assignedGunner: null
+      maxHp: 10
     });
 
-    await this.actor.update({
-      [`flags.${MODULE_ID}.weapons`]: weapons
-    });
+    ui.notifications.info("New ship weapon added!");
+    this.render(false);
   }
 
   async _onDeleteWeapon(event) {
     event.preventDefault();
-    const weaponIndex = parseInt(event.currentTarget.dataset.weaponIndex);
+    const element = event.currentTarget;
+    const itemId = element.dataset.itemId;
+
+    // Item-based weapon
+    if (itemId) {
+      const item = this.actor.items.get(itemId);
+      if (!item) return;
+
+      const confirm = await Dialog.confirm({
+        title: "Delete Weapon",
+        content: `<p>Are you sure you want to delete <strong>${item.name}</strong>?</p>`
+      });
+
+      if (confirm) {
+        await item.delete();
+        this.render(false);
+      }
+      return;
+    }
+
+    // Legacy flag-based weapon
+    const weaponIndex = parseInt(element.dataset.weaponIndex);
     const weapons = foundry.utils.deepClone(this.spelljammerData.weapons ?? []);
 
     if (weapons[weaponIndex]) {
@@ -782,12 +1097,16 @@ export class SpelljammerShipSheet extends ActorSheet {
   async _assignCrewMember(actor, role, gunnerIndex = null) {
     const assignments = foundry.utils.deepClone(this.spelljammerData.crewAssignments ?? {});
 
+    // Ensure gunners array exists with proper length
+    if (!Array.isArray(assignments.gunners)) {
+      assignments.gunners = [null, null, null, null];
+    }
+    while (assignments.gunners.length < 4) {
+      assignments.gunners.push(null);
+    }
+
     if (role === "gunner") {
       const idx = parseInt(gunnerIndex ?? 0);
-      if (!Array.isArray(assignments.gunners)) assignments.gunners = [];
-      while (assignments.gunners.length <= idx) {
-        assignments.gunners.push(null);
-      }
       assignments.gunners[idx] = actor.id;
     } else {
       assignments[role] = actor.id;
@@ -799,10 +1118,14 @@ export class SpelljammerShipSheet extends ActorSheet {
 
     ui.notifications.info(`${actor.name} assigned as ${role.charAt(0).toUpperCase() + role.slice(1)}!`);
 
+    // Notify other clients
     game.socket.emit(`module.${MODULE_ID}`, {
       type: "refreshSheet",
       actorId: this.actor.id
     });
+
+    // Force re-render this sheet
+    this.render(false);
 
     return true;
   }

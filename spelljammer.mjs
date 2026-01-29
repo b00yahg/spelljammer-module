@@ -159,53 +159,9 @@ export const OCEAN_COURT_EXPRESS = {
         minimum: 5,
         maximum: 15
       },
-      powerModules: {
-        weaponsArray: { active: false, hp: 10, maxHp: 10 },
-        deflectorGrid: { active: false, hp: 10, maxHp: 10 },
-        thrusterOverride: { active: false, hp: 10, maxHp: 10 },
-        hullReinforcement: { active: false, hp: 10, maxHp: 10 },
-        systemRestoration: { active: false, hp: 10, maxHp: 10 },
-        warpCoreCharge: { active: false, hp: 10, maxHp: 10 }
-      },
+      // Power modules will be added as Items by addDefaultPowerModules()
       warpChargeProgress: 0,
-      weapons: [
-        {
-          name: "Flower Cannon (Port)",
-          damage: "3d10",
-          damageType: "radiant",
-          range: "300/900",
-          position: "port",
-          firingArc: 90,
-          properties: [],
-          hp: 10,
-          maxHp: 10,
-          assignedGunner: null
-        },
-        {
-          name: "Flower Cannon (Starboard)",
-          damage: "3d10",
-          damageType: "radiant",
-          range: "300/900",
-          position: "starboard",
-          firingArc: 90,
-          properties: [],
-          hp: 10,
-          maxHp: 10,
-          assignedGunner: null
-        },
-        {
-          name: "Carronade (Bow)",
-          damage: "8d10",
-          damageType: "bludgeoning",
-          range: "500/1500",
-          position: "bow",
-          firingArc: 45,
-          properties: ["Utilize"],
-          hp: 10,
-          maxHp: 10,
-          assignedGunner: null
-        }
-      ],
+      // Weapons will be added as Items by addOceanCourtExpressWeapons()
       airSupply: {
         current: 30,
         max: 30
@@ -447,6 +403,56 @@ Hooks.on("preUpdateActor", (actor, changes, options, userId) => {
 /*  Compendium Population                       */
 /* -------------------------------------------- */
 
+/**
+ * Ocean Court Express default weapons configuration
+ */
+const OCEAN_COURT_EXPRESS_WEAPONS = [
+  {
+    name: "Flower Cannon (Port)",
+    damage: "3d10",
+    damageType: "radiant",
+    range: "300/900",
+    position: "port",
+    firingArc: 90,
+    properties: [],
+    hp: 10,
+    maxHp: 10
+  },
+  {
+    name: "Flower Cannon (Starboard)",
+    damage: "3d10",
+    damageType: "radiant",
+    range: "300/900",
+    position: "starboard",
+    firingArc: 90,
+    properties: [],
+    hp: 10,
+    maxHp: 10
+  },
+  {
+    name: "Carronade (Bow)",
+    damage: "8d10",
+    damageType: "bludgeoning",
+    range: "500/1500",
+    position: "bow",
+    firingArc: 45,
+    properties: ["Utilize"],
+    hp: 10,
+    maxHp: 10
+  }
+];
+
+/**
+ * Add default weapons to Ocean Court Express
+ */
+async function addOceanCourtExpressWeapons(actor) {
+  const existingWeapons = actor.items.filter(i => i.flags?.[MODULE_ID]?.isShipWeapon);
+  if (existingWeapons.length > 0) return; // Already has weapons
+
+  const weaponItems = OCEAN_COURT_EXPRESS_WEAPONS.map(w => createShipWeaponData(w));
+  await actor.createEmbeddedDocuments("Item", weaponItems);
+}
+
 async function populateCompendium() {
   const packName = `${MODULE_ID}.spelljammer-ships`;
   const pack = game.packs.get(packName);
@@ -469,8 +475,14 @@ async function populateCompendium() {
   // Create Ocean Court Express
   try {
     const actor = await Actor.create(OCEAN_COURT_EXPRESS, { pack: packName });
-    console.log(`${MODULE_ID} | Created Ocean Court Express in compendium`);
 
+    // Add default power modules as Items
+    await addDefaultPowerModules(actor);
+
+    // Add ship weapons as Items
+    await addOceanCourtExpressWeapons(actor);
+
+    console.log(`${MODULE_ID} | Created Ocean Court Express in compendium with Items`);
     ui.notifications.info("Spelljammer Ships compendium populated with Ocean Court Express!");
   } catch (err) {
     console.error(`${MODULE_ID} | Error creating compendium entry:`, err);
@@ -485,7 +497,14 @@ async function populateCompendium() {
  */
 export async function createOceanCourtExpress() {
   const actor = await Actor.create(OCEAN_COURT_EXPRESS);
-  ui.notifications.info(`Created ${actor.name}!`);
+
+  // Add default power modules as Items
+  await addDefaultPowerModules(actor);
+
+  // Add ship weapons as Items
+  await addOceanCourtExpressWeapons(actor);
+
+  ui.notifications.info(`Created ${actor.name} with weapons and power modules!`);
   actor.sheet.render(true);
   return actor;
 }
@@ -748,3 +767,188 @@ export const COLLISION_DAMAGE = {
   "3x3": "4d10",     // Heavy Frigate
   "4x4": "5d10"      // Ship of the Line
 };
+
+/* -------------------------------------------- */
+/*  Item-Based Weapons & Power Modules          */
+/* -------------------------------------------- */
+
+/**
+ * Create a ship weapon Item data object
+ * Uses D&D 5e weapon type with spelljammer flags
+ */
+export function createShipWeaponData(weaponData) {
+  const {
+    name = "Ship Weapon",
+    damage = "2d10",
+    damageType = "bludgeoning",
+    range = "300/900",
+    position = "broadside",
+    firingArc = 90,
+    properties = [],
+    hp = 10,
+    maxHp = 10
+  } = weaponData;
+
+  // Parse range string
+  const rangeParts = range.split("/");
+  const normalRange = parseInt(rangeParts[0]) || 300;
+  const longRange = parseInt(rangeParts[1]) || normalRange * 3;
+
+  return {
+    name,
+    type: "weapon",
+    img: "icons/weapons/artillery/cannon-engraved-gold.webp",
+    system: {
+      description: {
+        value: `<p><strong>Position:</strong> ${position}</p><p><strong>Firing Arc:</strong> ${firingArc}°</p>${properties.length ? `<p><strong>Properties:</strong> ${properties.join(", ")}</p>` : ""}`
+      },
+      quantity: 1,
+      weight: 500,
+      price: { value: 1000, denomination: "gp" },
+      attunement: "",
+      equipped: true,
+      rarity: "",
+      identified: true,
+      activation: { type: "action", cost: 1 },
+      duration: { value: null, units: "" },
+      target: { value: 1, type: "creature" },
+      range: { value: normalRange, long: longRange, units: "ft" },
+      uses: { value: null, max: "", per: null },
+      consume: { type: "", target: null, amount: null },
+      ability: "",
+      actionType: "rwak",
+      attackBonus: "",
+      chatFlavor: "",
+      critical: { threshold: null, damage: "" },
+      damage: {
+        parts: [[damage, damageType]],
+        versatile: ""
+      },
+      formula: "",
+      weaponType: "siege",
+      properties: {
+        hvy: true,
+        lod: true,
+        two: true
+      },
+      proficient: true,
+      armor: { value: 10 },
+      hp: { value: hp, max: maxHp, dt: null, conditions: "" }
+    },
+    flags: {
+      [MODULE_ID]: {
+        isShipWeapon: true,
+        position,
+        firingArc,
+        specialProperties: properties,
+        assignedGunner: null
+      }
+    }
+  };
+}
+
+/**
+ * Create a power module Item data object
+ * Uses D&D 5e equipment type with spelljammer flags
+ */
+export function createPowerModuleData(moduleId) {
+  const moduleDef = POWER_MODULES[moduleId];
+  if (!moduleDef) return null;
+
+  return {
+    name: moduleDef.name,
+    type: "equipment",
+    img: getPowerModuleIcon(moduleId),
+    system: {
+      description: {
+        value: `<p>${moduleDef.description}</p><p><strong>Power Cost:</strong> ${moduleDef.cost} charge${moduleDef.cost > 1 ? "s" : ""}</p>`
+      },
+      quantity: 1,
+      weight: 100,
+      price: { value: 500, denomination: "gp" },
+      attunement: "",
+      equipped: true,
+      rarity: "",
+      identified: true,
+      activation: { type: "bonus", cost: 1 },
+      duration: { value: 1, units: "round" },
+      armor: { value: 10 },
+      hp: { value: 10, max: 10, dt: null, conditions: "" },
+      type: { value: "vehicle", baseItem: "" }
+    },
+    flags: {
+      [MODULE_ID]: {
+        isPowerModule: true,
+        moduleId,
+        cost: moduleDef.cost,
+        effect: moduleDef.effect,
+        effectValue: moduleDef.effectValue,
+        active: false
+      }
+    }
+  };
+}
+
+/**
+ * Get an appropriate icon for a power module
+ */
+function getPowerModuleIcon(moduleId) {
+  const icons = {
+    weaponsArray: "icons/equipment/feet/boots-armored-steel.webp",
+    deflectorGrid: "icons/equipment/shield/buckler-wooden-boss-glowing-blue.webp",
+    thrusterOverride: "icons/commodities/tech/cog-brass.webp",
+    hullReinforcement: "icons/commodities/metal/plate-steel.webp",
+    systemRestoration: "icons/tools/smithing/anvil.webp",
+    warpCoreCharge: "icons/magic/light/orb-lightbulb-gray.webp"
+  };
+  return icons[moduleId] || "icons/svg/mystery-man.svg";
+}
+
+/**
+ * Add default power modules to a vehicle actor
+ */
+export async function addDefaultPowerModules(actor) {
+  const existingModules = actor.items.filter(i => i.flags?.[MODULE_ID]?.isPowerModule);
+
+  // Don't add if modules already exist
+  if (existingModules.length > 0) return;
+
+  const moduleItems = Object.keys(POWER_MODULES).map(moduleId => createPowerModuleData(moduleId));
+  await actor.createEmbeddedDocuments("Item", moduleItems);
+}
+
+/**
+ * Add a ship weapon to a vehicle actor
+ */
+export async function addShipWeapon(actor, weaponData) {
+  const itemData = createShipWeaponData(weaponData);
+  const [created] = await actor.createEmbeddedDocuments("Item", [itemData]);
+  return created;
+}
+
+/**
+ * Get all ship weapons from an actor's items
+ */
+export function getShipWeapons(actor) {
+  return actor.items.filter(i => i.flags?.[MODULE_ID]?.isShipWeapon);
+}
+
+/**
+ * Get all power modules from an actor's items
+ */
+export function getPowerModules(actor) {
+  return actor.items.filter(i => i.flags?.[MODULE_ID]?.isPowerModule);
+}
+
+/**
+ * Toggle a power module's active state
+ */
+export async function togglePowerModule(actor, itemId, active) {
+  const item = actor.items.get(itemId);
+  if (!item || !item.flags?.[MODULE_ID]?.isPowerModule) return false;
+
+  await item.update({
+    [`flags.${MODULE_ID}.active`]: active
+  });
+  return true;
+}

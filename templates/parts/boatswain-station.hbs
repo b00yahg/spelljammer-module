@@ -52,9 +52,9 @@
     <h3 class="section-subtitle">Power Modules</h3>
 
     <div class="power-modules-grid">
-      {{#each spelljammer.powerModulesWithDefs as |module|}}
+      {{#each spelljammer.powerModuleItems as |module|}}
         <div class="power-module {{#if module.active}}active{{/if}} {{#if module.disabled}}disabled{{/if}}"
-             data-action="toggleModule" data-module-id="{{module.id}}">
+             data-action="toggleModule" data-item-id="{{module.id}}" data-module-id="{{module.moduleId}}">
           <div class="module-header">
             <span class="module-name">{{module.name}}</span>
             <span class="module-cost">{{module.cost}} {{#if (sjc-eq module.cost 1)}}charge{{else}}charges{{/if}}</span>
@@ -63,10 +63,7 @@
           <div class="module-footer">
             <div class="module-hp">
               <label>HP:</label>
-              <input type="number" name="spelljammer.powerModules.{{module.id}}.hp"
-                     value="{{module.hp}}" min="0" max="{{module.maxHp}}"
-                     class="module-hp-input" onclick="event.stopPropagation();" />
-              <span class="hp-max">/{{module.maxHp}}</span>
+              <span>{{module.hp}}/{{module.maxHp}}</span>
             </div>
             <div class="module-toggle">
               <span class="toggle-label">{{#if module.active}}ON{{else}}OFF{{/if}}</span>
@@ -87,24 +84,28 @@
   </div>
 
   {{!-- Warp Core Progress --}}
-  {{#if spelljammer.powerModules.warpCoreCharge.active}}
-    <div class="warp-core-progress">
-      <h4>Warp Core Charging</h4>
-      <div class="warp-progress-bar">
-        {{#each (array 1 2 3) as |turn|}}
-          <div class="warp-segment {{#if (lte turn ../spelljammer.warpChargeProgress)}}charged{{/if}}">
-            Turn {{turn}}
+  {{#each spelljammer.powerModuleItems as |mod|}}
+    {{#if (sjc-eq mod.moduleId "warpCoreCharge")}}
+      {{#if mod.active}}
+        <div class="warp-core-progress">
+          <h4>Warp Core Charging</h4>
+          <div class="warp-progress-bar">
+            {{#each (array 1 2 3) as |turn|}}
+              <div class="warp-segment {{#if (lte turn ../../spelljammer.warpChargeProgress)}}charged{{/if}}">
+                Turn {{turn}}
+              </div>
+            {{/each}}
           </div>
-        {{/each}}
-      </div>
-      {{#if (gte spelljammer.warpChargeProgress 3)}}
-        <div class="warp-ready">
-          <i class="fas fa-rocket"></i>
-          <span>WARP JUMP READY!</span>
+          {{#if (gte ../../spelljammer.warpChargeProgress 3)}}
+            <div class="warp-ready">
+              <i class="fas fa-rocket"></i>
+              <span>WARP JUMP READY!</span>
+            </div>
+          {{/if}}
         </div>
       {{/if}}
-    </div>
-  {{/if}}
+    {{/if}}
+  {{/each}}
 
   {{!-- Special Actions --}}
   <div class="ability-section actions-section">
@@ -145,19 +146,20 @@
   <div class="ability-section effects-summary">
     <h3 class="section-subtitle">Active Effects</h3>
     <div class="active-effects-list">
-      {{#each spelljammer.powerModulesWithDefs as |module|}}
+      {{#each spelljammer.powerModuleItems as |module|}}
         {{#if module.active}}
-          <div class="active-effect {{module.id}}">
+          <div class="active-effect {{module.moduleId}}">
             <i class="fas fa-check-circle"></i>
             <span>{{module.name}}: {{module.description}}</span>
           </div>
         {{/if}}
-      {{else}}
+      {{/each}}
+      {{#unless spelljammer.usedPowerCharges}}
         <div class="no-effects">
           <i class="fas fa-power-off"></i>
           <span>No modules currently active</span>
         </div>
-      {{/each}}
+      {{/unless}}
     </div>
   </div>
 
