@@ -1,0 +1,92 @@
+{
+  "SPELLJAMMER": {
+    "ModuleName": "Spelljammer Ship Combat",
+    "SheetTitle": "Ship Bridge",
+    "Tabs": {
+      "Bridge": "Bridge",
+      "Weapons": "Weapons",
+      "Modules": "Modules",
+      "Movement": "Movement"
+    },
+    "Crew": {
+      "Captain": "Captain",
+      "Helmsman": "Helmsman",
+      "Gunner": "Gunner",
+      "Gunners": "Gunners",
+      "Boatswain": "Boatswain",
+      "Unassigned": "Unassigned",
+      "AssignCrew": "Assign Crew",
+      "RemoveCrew": "Remove Crew",
+      "DragDrop": "Drag character here"
+    },
+    "Actions": {
+      "RollInitiative": "Roll Initiative",
+      "Hail": "Hail Ship",
+      "GrapplingRopes": "Grappling Ropes",
+      "ToMe": "To Me, Ocean Court!",
+      "Overdrive": "Overdrive",
+      "EmergencyBrake": "Emergency Brake",
+      "Evade": "Evade",
+      "Jamming": "Jamming",
+      "FireWeapon": "Fire Weapon",
+      "SwitchWeapon": "Switch Weapon",
+      "AllocatePower": "Allocate Power",
+      "ArcaneOverclock": "Arcane Overclock",
+      "EmergencyHotfix": "Emergency Hotfix"
+    },
+    "CaptainOrders": {
+      "Title": "Captain's Orders",
+      "Offensive": "Offensive Order",
+      "Engineering": "Engineering Order",
+      "Tactical": "Tactical Order",
+      "OffensiveDesc": "One Gunner gets an extra weapon attack",
+      "EngineeringDesc": "Boatswain gains +1 power charge",
+      "TacticalDesc": "Helmsman gets advantage on Overdrive/Brake checks"
+    },
+    "Modules": {
+      "WeaponsArray": "Weapons Array",
+      "DeflectorGrid": "Deflector Grid",
+      "ThrusterOverride": "Thruster Override",
+      "HullReinforcement": "Hull Reinforcement",
+      "SystemRestoration": "System Restoration",
+      "WarpCoreCharge": "Warp Core Charge",
+      "PowerCharges": "Power Charges",
+      "Active": "Active",
+      "Inactive": "Inactive"
+    },
+    "Velocity": {
+      "Current": "Current Velocity",
+      "Direction": "Direction",
+      "MaxAcceleration": "Max Acceleration",
+      "MaxDeceleration": "Max Deceleration",
+      "Accelerate": "Accelerate",
+      "Decelerate": "Decelerate"
+    },
+    "Ship": {
+      "HullPoints": "Hull Points",
+      "ArmorClass": "Armor Class",
+      "AirSupply": "Air Supply",
+      "CrewMinimum": "Min Crew",
+      "CrewMaximum": "Max Crew"
+    },
+    "Weapons": {
+      "Position": "Position",
+      "FiringArc": "Firing Arc",
+      "Damage": "Damage",
+      "Range": "Range",
+      "AssignedGunner": "Assigned Gunner",
+      "Port": "Port",
+      "Starboard": "Starboard",
+      "Bow": "Bow",
+      "Stern": "Stern"
+    },
+    "Settings": {
+      "DefaultVelocity": "Default Starting Velocity",
+      "DefaultVelocityHint": "The default velocity (in feet) for new ships",
+      "Y2KTheme": "Enable Y2K Theme",
+      "Y2KThemeHint": "Enable the retro Y2K-inspired visual theme",
+      "TokenOverlay": "Show Token Velocity Overlay",
+      "TokenOverlayHint": "Display current velocity next to ship tokens"
+    }
+  }
+}

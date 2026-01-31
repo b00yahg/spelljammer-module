@@ -1,0 +1,89 @@
+{{!-- Helmsman Station --}}
+<div class="crew-station helmsman-station">
+  <div class="station-header">
+    <h2><i class="fas fa-dharmachakra"></i> Helmsman</h2>
+    <span class="ability-tag">WIS + Prof</span>
+  </div>
+
+  {{!-- Crew Assignment --}}
+  <div class="crew-slot">
+    {{#if spelljammer.crew.helmsman}}
+      <div class="assigned-crew">
+        <img src="{{spelljammer.crew.helmsman.img}}" alt="{{spelljammer.crew.helmsman.name}}" class="crew-portrait" />
+        <div class="crew-details">
+          <span class="crew-name">{{spelljammer.crew.helmsman.name}}</span>
+          <span class="crew-stats">
+            WIS {{sjFormatMod spelljammer.crew.helmsman.wis}} | Prof +{{spelljammer.crew.helmsman.prof}}
+          </span>
+        </div>
+        <button type="button" class="remove-crew" data-role="helmsman">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    {{else}}
+      <div class="crew-dropzone" data-role="helmsman">
+        <p class="drop-hint"><i class="fas fa-user-plus"></i> Drag character here</p>
+        <select class="crew-select" data-role="helmsman">
+          <option value="">-- Assign Helmsman --</option>
+          {{#each spelljammer.availableCharacters as |char|}}
+            <option value="{{char.id}}">{{char.name}}</option>
+          {{/each}}
+        </select>
+      </div>
+    {{/if}}
+  </div>
+
+  {{!-- Current Velocity Display --}}
+  <div class="velocity-display">
+    <div class="velocity-current">
+      <span class="velocity-value">{{spelljammer.velocity.current}}</span>
+      <span class="velocity-unit">ft/round</span>
+    </div>
+    <div class="velocity-direction">
+      <span class="direction-arrow" data-direction="{{spelljammer.velocity.direction}}">
+        {{#if (sjEq spelljammer.velocity.direction "N")}}<i class="fas fa-arrow-up"></i>{{/if}}
+        {{#if (sjEq spelljammer.velocity.direction "NE")}}<i class="fas fa-arrow-up" style="transform: rotate(45deg)"></i>{{/if}}
+        {{#if (sjEq spelljammer.velocity.direction "E")}}<i class="fas fa-arrow-right"></i>{{/if}}
+        {{#if (sjEq spelljammer.velocity.direction "SE")}}<i class="fas fa-arrow-down" style="transform: rotate(-45deg)"></i>{{/if}}
+        {{#if (sjEq spelljammer.velocity.direction "S")}}<i class="fas fa-arrow-down"></i>{{/if}}
+        {{#if (sjEq spelljammer.velocity.direction "SW")}}<i class="fas fa-arrow-down" style="transform: rotate(45deg)"></i>{{/if}}
+        {{#if (sjEq spelljammer.velocity.direction "W")}}<i class="fas fa-arrow-left"></i>{{/if}}
+        {{#if (sjEq spelljammer.velocity.direction "NW")}}<i class="fas fa-arrow-up" style="transform: rotate(-45deg)"></i>{{/if}}
+      </span>
+      <span class="direction-label">{{spelljammer.velocity.direction}}</span>
+    </div>
+  </div>
+
+  {{!-- Helmsman Actions --}}
+  <div class="station-actions">
+    <div class="action-group">
+      <h3>Movement Actions</h3>
+      <button type="button" class="helmsman-action" data-action="overdrive"
+              {{#unless spelljammer.crew.helmsman}}disabled{{/unless}}>
+        <i class="fas fa-bolt"></i> Overdrive (3x Accel)
+      </button>
+      <button type="button" class="helmsman-action" data-action="brake"
+              {{#unless spelljammer.crew.helmsman}}disabled{{/unless}}>
+        <i class="fas fa-stop-circle"></i> Emergency Brake (3x Decel)
+      </button>
+    </div>
+
+    <div class="action-group">
+      <h3>Maneuvers (Spell Slots)</h3>
+      <button type="button" class="helmsman-action" data-action="evade"
+              {{#unless spelljammer.crew.helmsman}}disabled{{/unless}}>
+        <i class="fas fa-shield-alt"></i> Evade (1st-level)
+      </button>
+      <button type="button" class="helmsman-action" data-action="jamming"
+              {{#unless spelljammer.crew.helmsman}}disabled{{/unless}}>
+        <i class="fas fa-satellite-dish"></i> Jamming (3rd-level)
+      </button>
+    </div>
+  </div>
+
+  <div class="station-info">
+    <p><strong>Max Acceleration:</strong> {{spelljammer.velocity.maxAcceleration}} ft</p>
+    <p><strong>Max Deceleration:</strong> {{spelljammer.velocity.maxDeceleration}} ft</p>
+    <p><strong>Overdrive/Brake DC:</strong> Based on speed (0-100ft: DC 0, 200-300ft: DC 5, etc.)</p>
+  </div>
+</div>

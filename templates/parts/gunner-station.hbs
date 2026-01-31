@@ -1,0 +1,82 @@
+{{!-- Gunner Stations --}}
+<div class="crew-station gunner-station">
+  <div class="station-header">
+    <h2><i class="fas fa-crosshairs"></i> Gunners</h2>
+    <span class="ability-tag">DEX + Prof</span>
+  </div>
+
+  {{!-- Gunner Slots --}}
+  <div class="gunner-slots">
+    {{#if spelljammer.isSinglePilot}}
+      {{!-- Single pilot mode - only one gunner slot --}}
+      <div class="gunner-slot">
+        <h3>Gunner</h3>
+        <div class="crew-slot">
+          {{#with (sjIndex spelljammer.crew.gunners 0)}}
+            <div class="assigned-crew">
+              <img src="{{this.img}}" alt="{{this.name}}" class="crew-portrait" />
+              <div class="crew-details">
+                <span class="crew-name">{{this.name}}</span>
+                <span class="crew-stats">
+                  DEX {{sjFormatMod this.dex}} | Attack +{{this.attackBonus}}
+                </span>
+              </div>
+              <button type="button" class="remove-crew" data-role="gunner" data-gunner-index="0">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          {{else}}
+            <div class="crew-dropzone" data-role="gunner" data-gunner-index="0">
+              <p class="drop-hint"><i class="fas fa-user-plus"></i> Drag character here</p>
+              <select class="crew-select" data-role="gunner" data-gunner-index="0">
+                <option value="">-- Assign Gunner --</option>
+                {{#each ../spelljammer.availableCharacters as |char|}}
+                  <option value="{{char.id}}">{{char.name}}</option>
+                {{/each}}
+              </select>
+            </div>
+          {{/with}}
+        </div>
+      </div>
+    {{else}}
+      {{!-- Standard mode - up to 4 gunner slots --}}
+      {{#sjTimes 4}}
+        <div class="gunner-slot">
+          <h3>Gunner {{sjAdd index 1}}</h3>
+          <div class="crew-slot">
+            {{#with (sjIndex ../../spelljammer.crew.gunners index)}}
+              <div class="assigned-crew">
+                <img src="{{this.img}}" alt="{{this.name}}" class="crew-portrait" />
+                <div class="crew-details">
+                  <span class="crew-name">{{this.name}}</span>
+                  <span class="crew-stats">
+                    DEX {{sjFormatMod this.dex}} | Attack +{{this.attackBonus}}
+                  </span>
+                </div>
+                <button type="button" class="remove-crew" data-role="gunner" data-gunner-index="{{../index}}">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            {{else}}
+              <div class="crew-dropzone" data-role="gunner" data-gunner-index="{{index}}">
+                <p class="drop-hint"><i class="fas fa-user-plus"></i> Drag character here</p>
+                <select class="crew-select" data-role="gunner" data-gunner-index="{{index}}">
+                  <option value="">-- Assign Gunner --</option>
+                  {{#each ../../spelljammer.availableCharacters as |char|}}
+                    <option value="{{char.id}}">{{char.name}}</option>
+                  {{/each}}
+                </select>
+              </div>
+            {{/with}}
+          </div>
+        </div>
+      {{/sjTimes}}
+    {{/if}}
+  </div>
+
+  <div class="station-info">
+    <p><strong>Attack Roll:</strong> d20 + DEX + Prof</p>
+    <p><strong>Damage:</strong> Weapon dice + DEX modifier</p>
+    <p><strong>Weapons Array:</strong> +1d6 damage when active</p>
+  </div>
+</div>

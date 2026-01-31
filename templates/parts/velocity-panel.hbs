@@ -1,0 +1,147 @@
+{{!-- Velocity/Movement Panel --}}
+<div class="velocity-panel">
+  <h2>Ship Movement</h2>
+
+  <div class="velocity-controls">
+    {{!-- Current Velocity Display --}}
+    <div class="velocity-display-large">
+      <div class="velocity-main">
+        <span class="velocity-number">{{spelljammer.velocity.current}}</span>
+        <span class="velocity-unit">ft/round</span>
+      </div>
+      <div class="direction-display">
+        <div class="compass">
+          {{#each directions as |dir|}}
+            <span class="compass-point {{#if (sjEq dir ../spelljammer.velocity.direction)}}active{{/if}}"
+                  data-direction="{{dir}}">{{dir}}</span>
+          {{/each}}
+        </div>
+        <select class="direction-select">
+          {{#each directions as |dir|}}
+            <option value="{{dir}}" {{#if (sjEq dir ../spelljammer.velocity.direction)}}selected{{/if}}>{{dir}}</option>
+          {{/each}}
+        </select>
+      </div>
+    </div>
+
+    {{!-- Movement Limits --}}
+    <div class="movement-limits">
+      <div class="limit-box">
+        <span class="limit-label">Max Acceleration</span>
+        <span class="limit-value">{{spelljammer.velocity.maxAcceleration}} ft</span>
+      </div>
+      <div class="limit-box">
+        <span class="limit-label">Max Deceleration</span>
+        <span class="limit-value">{{spelljammer.velocity.maxDeceleration}} ft</span>
+      </div>
+    </div>
+
+    {{!-- Velocity Adjustment Buttons --}}
+    <div class="velocity-buttons">
+      <h3>Adjust Velocity</h3>
+      <div class="button-row">
+        <button type="button" class="velocity-adjust" data-adjust="-200">-200</button>
+        <button type="button" class="velocity-adjust" data-adjust="-100">-100</button>
+        <button type="button" class="velocity-adjust" data-adjust="-50">-50</button>
+        <button type="button" class="velocity-adjust" data-adjust="50">+50</button>
+        <button type="button" class="velocity-adjust" data-adjust="100">+100</button>
+        <button type="button" class="velocity-adjust" data-adjust="200">+200</button>
+      </div>
+      <div class="button-row">
+        <button type="button" class="velocity-adjust danger" data-adjust="{{sjMul spelljammer.velocity.current -1}}">
+          <i class="fas fa-stop"></i> Full Stop
+        </button>
+      </div>
+    </div>
+  </div>
+
+  {{!-- Helmsman Actions --}}
+  <div class="helmsman-actions">
+    <h3>Helmsman Special Actions</h3>
+
+    <div class="action-card overdrive">
+      <h4><i class="fas fa-bolt"></i> Overdrive</h4>
+      <p>Triple your maximum acceleration. Requires WIS (Vehicles) check based on speed.</p>
+      <button type="button" class="helmsman-action" data-action="overdrive"
+              {{#unless spelljammer.crew.helmsman}}disabled{{/unless}}>
+        Activate Overdrive
+      </button>
+    </div>
+
+    <div class="action-card brake">
+      <h4><i class="fas fa-stop-circle"></i> Emergency Brake</h4>
+      <p>Triple your maximum deceleration. Failure causes 2d6 force damage to ship.</p>
+      <button type="button" class="helmsman-action" data-action="brake"
+              {{#unless spelljammer.crew.helmsman}}disabled{{/unless}}>
+        Emergency Brake
+      </button>
+    </div>
+
+    <div class="action-card evade">
+      <h4><i class="fas fa-shield-alt"></i> Evade (1st-level slot)</h4>
+      <p>Add proficiency bonus to AC or Vehicle checks until next turn. +2 per level above 1st.</p>
+      <button type="button" class="helmsman-action" data-action="evade"
+              {{#unless spelljammer.crew.helmsman}}disabled{{/unless}}>
+        Evade
+      </button>
+    </div>
+
+    <div class="action-card jamming">
+      <h4><i class="fas fa-satellite-dish"></i> Jamming (3rd-level slot)</h4>
+      <p>Match another ship's speed, acceleration, and deceleration for 1 minute.</p>
+      <button type="button" class="helmsman-action" data-action="jamming"
+              {{#unless spelljammer.crew.helmsman}}disabled{{/unless}}>
+        Initiate Jamming
+      </button>
+    </div>
+  </div>
+
+  {{!-- Overdrive DC Table --}}
+  <div class="dc-table">
+    <h3>Overdrive/Emergency Brake DC</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Current Speed</th>
+          <th>DC</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="{{#if (sjLte spelljammer.velocity.current 100)}}current{{/if}}">
+          <td>0-100 ft</td>
+          <td>0</td>
+        </tr>
+        <tr class="{{#if (sjGt spelljammer.velocity.current 100)}}{{#if (sjLte spelljammer.velocity.current 300)}}current{{/if}}{{/if}}">
+          <td>200-300 ft</td>
+          <td>5</td>
+        </tr>
+        <tr class="{{#if (sjGt spelljammer.velocity.current 300)}}{{#if (sjLte spelljammer.velocity.current 500)}}current{{/if}}{{/if}}">
+          <td>400-500 ft</td>
+          <td>10</td>
+        </tr>
+        <tr class="{{#if (sjGt spelljammer.velocity.current 500)}}{{#if (sjLte spelljammer.velocity.current 700)}}current{{/if}}{{/if}}">
+          <td>600-700 ft</td>
+          <td>15</td>
+        </tr>
+        <tr class="{{#if (sjGt spelljammer.velocity.current 700)}}current{{/if}}">
+          <td>800-900 ft</td>
+          <td>20</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  {{!-- Collision Info --}}
+  <div class="collision-info">
+    <h3>Collision Damage</h3>
+    <p>When ships collide, both take damage based on ship size:</p>
+    <ul>
+      <li><strong>Fighter (0.5x0.5):</strong> 1d10</li>
+      <li><strong>Sloop/Schooner (1x1):</strong> 2d10</li>
+      <li><strong>Frigate (2x2):</strong> 3d10</li>
+      <li><strong>Heavy Frigate (3x3):</strong> 4d10</li>
+      <li><strong>Ship of the Line (4x4):</strong> 5d10</li>
+    </ul>
+    <p><strong>Grazing:</strong> If only clipping a corner, Helmsman can make WIS (Vehicles) check to avoid damage.</p>
+  </div>
+</div>

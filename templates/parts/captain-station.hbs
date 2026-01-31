@@ -1,0 +1,81 @@
+{{!-- Captain Station --}}
+<div class="crew-station captain-station">
+  <div class="station-header">
+    <h2><i class="fas fa-crown"></i> Captain</h2>
+    <span class="ability-tag">CHA + Prof</span>
+  </div>
+
+  {{!-- Crew Assignment --}}
+  <div class="crew-slot">
+    {{#if spelljammer.crew.captain}}
+      <div class="assigned-crew">
+        <img src="{{spelljammer.crew.captain.img}}" alt="{{spelljammer.crew.captain.name}}" class="crew-portrait" />
+        <div class="crew-details">
+          <span class="crew-name">{{spelljammer.crew.captain.name}}</span>
+          <span class="crew-stats">
+            CHA {{sjFormatMod spelljammer.crew.captain.cha}} | Prof +{{spelljammer.crew.captain.prof}}
+          </span>
+        </div>
+        <button type="button" class="remove-crew" data-role="captain">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    {{else}}
+      <div class="crew-dropzone" data-role="captain">
+        <p class="drop-hint"><i class="fas fa-user-plus"></i> Drag character here</p>
+        <select class="crew-select" data-role="captain">
+          <option value="">-- Assign Captain --</option>
+          {{#each spelljammer.availableCharacters as |char|}}
+            <option value="{{char.id}}">{{char.name}}</option>
+          {{/each}}
+        </select>
+      </div>
+    {{/if}}
+  </div>
+
+  {{!-- Captain Actions --}}
+  <div class="station-actions">
+    <button type="button" class="roll-initiative" {{#unless spelljammer.crew.captain}}disabled{{/unless}}>
+      <i class="fas fa-dice-d20"></i> Roll Initiative
+    </button>
+
+    <div class="action-group">
+      <h3>Captain's Orders (Once per Combat)</h3>
+      <div class="order-buttons">
+        <button type="button" class="captain-order" data-order="offensive"
+                {{#unless spelljammer.crew.captain}}disabled{{/unless}}
+                title="One Gunner gets an extra weapon attack">
+          <i class="fas fa-crosshairs"></i> Offensive
+        </button>
+        <button type="button" class="captain-order" data-order="engineering"
+                {{#unless spelljammer.crew.captain}}disabled{{/unless}}
+                title="Boatswain gains +1 power charge">
+          <i class="fas fa-cog"></i> Engineering
+        </button>
+        <button type="button" class="captain-order" data-order="tactical"
+                {{#unless spelljammer.crew.captain}}disabled{{/unless}}
+                title="Helmsman gets advantage on Overdrive/Brake checks">
+          <i class="fas fa-chess"></i> Tactical
+        </button>
+      </div>
+    </div>
+
+    <div class="action-group">
+      <h3>Special Actions</h3>
+      <button type="button" class="roll-vehicle-check" data-check-type="grapple" data-ability="cha"
+              {{#unless spelljammer.crew.captain}}disabled{{/unless}}>
+        <i class="fas fa-link"></i> Grappling Ropes
+      </button>
+      <button type="button" class="roll-vehicle-check" data-check-type="hail" data-ability="cha"
+              {{#unless spelljammer.crew.captain}}disabled{{/unless}}>
+        <i class="fas fa-broadcast-tower"></i> Hail Ship
+      </button>
+    </div>
+  </div>
+
+  <div class="station-info">
+    <p><strong>Initiative:</strong> d20 + CHA + Prof</p>
+    <p><strong>Grappling:</strong> Contested CHA (Vehicles) check</p>
+    <p><strong>To Me, Ocean Court:</strong> Teleport crew for boarding/defense</p>
+  </div>
+</div>

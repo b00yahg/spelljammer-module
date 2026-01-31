@@ -1,0 +1,103 @@
+{{!-- Weapons Panel --}}
+<div class="weapons-panel">
+  <h2>Ship Weapons</h2>
+
+  {{#if spelljammer.weapons.length}}
+    <div class="weapons-list">
+      {{#each spelljammer.weapons as |weapon|}}
+        <div class="weapon-card {{#unless weapon.canFire}}disabled{{/unless}}">
+          <div class="weapon-header">
+            <h3>{{weapon.name}}</h3>
+            <div class="weapon-hp">
+              <span class="hp-bar" style="width: {{sjDiv (sjMul weapon.hp 100) weapon.maxHp}}%"></span>
+              <span class="hp-text">{{weapon.hp}}/{{weapon.maxHp}}</span>
+            </div>
+          </div>
+
+          <div class="weapon-stats">
+            <div class="stat">
+              <span class="stat-label">Damage</span>
+              <span class="stat-value">{{weapon.damage}} {{weapon.damageType}}</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">Range</span>
+              <span class="stat-value">{{weapon.range.normal}}/{{weapon.range.long}} ft</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">Position</span>
+              <span class="stat-value">{{weapon.position}}</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">Firing Arc</span>
+              <span class="stat-value">{{weapon.firingArc}}°</span>
+            </div>
+          </div>
+
+          {{#if weapon.specialProperties.length}}
+            <div class="weapon-properties">
+              {{#each weapon.specialProperties as |prop|}}
+                <span class="property-tag">{{prop}}</span>
+              {{/each}}
+            </div>
+          {{/if}}
+
+          <div class="weapon-gunner">
+            <label>Assigned Gunner:</label>
+            <select class="weapon-gunner-select" data-weapon-id="{{weapon.id}}">
+              <option value="">-- None --</option>
+              {{#sjTimes 4}}
+                {{#with (sjIndex ../../spelljammer.crew.gunners index)}}
+                  <option value="{{../index}}" {{#if (sjEq ../../weapon.assignedGunner ../index)}}selected{{/if}}>
+                    Gunner {{sjAdd ../index 1}}: {{this.name}}
+                  </option>
+                {{else}}
+                  <option value="{{index}}" disabled>Gunner {{sjAdd index 1}}: (Empty)</option>
+                {{/with}}
+              {{/sjTimes}}
+            </select>
+          </div>
+
+          {{#if weapon.gunner}}
+            <div class="weapon-attack-info">
+              <span class="attack-bonus">Attack: +{{weapon.attackBonus}}</span>
+              <span class="damage-bonus">Damage: +{{weapon.damageBonus}}</span>
+            </div>
+          {{/if}}
+
+          <div class="weapon-actions">
+            <button type="button" class="roll-weapon-attack" data-weapon-id="{{weapon.id}}"
+                    {{#unless weapon.canFire}}disabled{{/unless}}>
+              <i class="fas fa-dice-d20"></i> Attack
+            </button>
+            <button type="button" class="roll-weapon-damage" data-weapon-id="{{weapon.id}}"
+                    {{#unless weapon.canFire}}disabled{{/unless}}>
+              <i class="fas fa-burst"></i> Damage
+            </button>
+          </div>
+        </div>
+      {{/each}}
+    </div>
+  {{else}}
+    <div class="no-weapons">
+      <p><i class="fas fa-exclamation-triangle"></i> No weapons installed on this ship.</p>
+      <p class="hint">Weapons can be added via the ship's creation function or by editing the actor's flags.</p>
+    </div>
+  {{/if}}
+
+  <div class="weapons-info">
+    <h3>Weapon Rules</h3>
+    <ul>
+      <li><strong>Attack Roll:</strong> d20 + Gunner's DEX + Prof</li>
+      <li><strong>Damage Roll:</strong> Weapon dice + Gunner's DEX modifier</li>
+      <li><strong>Weapons Array:</strong> When active, adds +1d6 to all weapon damage</li>
+      <li><strong>Firing Arc:</strong> Weapons can only target within their arc (45° or 90°)</li>
+    </ul>
+
+    <h4>Special Properties</h4>
+    <ul>
+      <li><strong>Utilize:</strong> Requires an action to recharge after firing</li>
+      <li><strong>Automatic:</strong> Make 2 attacks at disadvantage instead of 1</li>
+      <li><strong>Crew-Operated:</strong> Requires 2 crew members to operate</li>
+    </ul>
+  </div>
+</div>

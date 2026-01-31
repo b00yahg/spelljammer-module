@@ -1,0 +1,1102 @@
+/**
+ * Spelljammer Ship Combat - Y2K Inspired Theme
+ * For Foundry VTT
+ */
+
+/* ==========================================================================
+   CSS VARIABLES
+   ========================================================================== */
+
+.spelljammer-sheet {
+  --sj-primary: #5b8af9;
+  --sj-secondary: #6a8cc4;
+  --sj-accent: #ffb347;
+  --sj-accent-purple: #9370db;
+  --sj-accent-pink: #de7aad;
+  --sj-accent-cyan: #50c2c2;
+  --sj-light: #f8f8f8;
+  --sj-dark: #333333;
+  --sj-danger: #e74c3c;
+  --sj-success: #2ecc71;
+  --sj-warning: #f1c40f;
+  --sj-background: #ffffff;
+  --sj-text: #222222;
+  --sj-card-bg: rgba(255, 255, 255, 0.95);
+  --sj-border-color: rgba(91, 138, 249, 0.3);
+  --sj-shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Y2K Dark Theme */
+.spelljammer-sheet.y2k-theme {
+  --sj-primary: #00ccff;
+  --sj-secondary: #6633ff;
+  --sj-accent: #33ff99;
+  --sj-accent-purple: #bb33ff;
+  --sj-accent-pink: #ff33aa;
+  --sj-accent-cyan: #00eeff;
+  --sj-light: #112233;
+  --sj-dark: #eeeeff;
+  --sj-danger: #ff3366;
+  --sj-success: #00cc99;
+  --sj-warning: #ffbb33;
+  --sj-background: #0a1520;
+  --sj-text: #ccddff;
+  --sj-card-bg: rgba(10, 20, 40, 0.95);
+  --sj-border-color: rgba(0, 204, 255, 0.5);
+  --sj-shadow-color: rgba(0, 204, 255, 0.2);
+}
+
+/* ==========================================================================
+   BASE STYLES
+   ========================================================================== */
+
+.spelljammer-sheet {
+  font-family: 'Exo 2', 'Roboto', sans-serif;
+  background-color: var(--sj-background);
+  color: var(--sj-text);
+  padding: 0;
+}
+
+.spelljammer-sheet * {
+  box-sizing: border-box;
+}
+
+/* CRT Scanline Effect for Y2K Theme */
+.spelljammer-sheet.y2k-theme::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%);
+  background-size: 100% 2px;
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0.3;
+}
+
+/* ==========================================================================
+   SHEET HEADER
+   ========================================================================== */
+
+.spelljammer-sheet .sheet-header {
+  display: flex;
+  gap: 20px;
+  padding: 15px;
+  background: linear-gradient(135deg, var(--sj-card-bg) 0%, rgba(0, 204, 255, 0.05) 100%);
+  border-bottom: 2px solid var(--sj-border-color);
+  margin-bottom: 0;
+}
+
+.spelljammer-sheet .ship-portrait {
+  width: 100px;
+  height: 100px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 3px solid var(--sj-accent-cyan);
+  box-shadow: 0 0 15px var(--sj-shadow-color);
+  flex-shrink: 0;
+}
+
+.spelljammer-sheet .ship-portrait img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.spelljammer-sheet .ship-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.spelljammer-sheet .ship-name {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+}
+
+.spelljammer-sheet .ship-name input {
+  font-size: 1.8rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-family: 'Quantico', 'Exo 2', sans-serif;
+  letter-spacing: 2px;
+  color: var(--sj-accent-cyan);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--sj-accent-cyan);
+  width: 100%;
+  padding: 0 0 5px 0;
+}
+
+.y2k-theme .ship-name input {
+  text-shadow: 0 0 10px rgba(0, 238, 255, 0.5);
+}
+
+.spelljammer-sheet .ship-class {
+  font-size: 1rem;
+  color: var(--sj-secondary);
+  font-style: italic;
+}
+
+.spelljammer-sheet .ship-stats {
+  display: flex;
+  gap: 20px;
+  margin-top: auto;
+}
+
+.spelljammer-sheet .stat-box {
+  background: var(--sj-card-bg);
+  border: 1px solid var(--sj-border-color);
+  border-radius: 6px;
+  padding: 8px 15px;
+  text-align: center;
+}
+
+.spelljammer-sheet .stat-label {
+  display: block;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: var(--sj-secondary);
+  margin-bottom: 4px;
+}
+
+.spelljammer-sheet .stat-value {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--sj-accent-cyan);
+}
+
+.spelljammer-sheet .hp-display {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.spelljammer-sheet .hp-display input {
+  width: 50px;
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: bold;
+  background: transparent;
+  border: 1px solid var(--sj-border-color);
+  border-radius: 4px;
+  color: var(--sj-text);
+  padding: 4px;
+}
+
+.spelljammer-sheet .hp-separator {
+  color: var(--sj-secondary);
+}
+
+/* ==========================================================================
+   TABS
+   ========================================================================== */
+
+.spelljammer-sheet .sheet-tabs {
+  display: flex;
+  background: var(--sj-card-bg);
+  border-bottom: 2px solid var(--sj-border-color);
+}
+
+.spelljammer-sheet .sheet-tabs .item {
+  padding: 12px 24px;
+  color: var(--sj-text);
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+}
+
+.spelljammer-sheet .sheet-tabs .item:hover {
+  background: rgba(0, 204, 255, 0.1);
+  color: var(--sj-accent-cyan);
+}
+
+.spelljammer-sheet .sheet-tabs .item.active {
+  color: var(--sj-accent-cyan);
+  border-bottom-color: var(--sj-accent-cyan);
+  background: rgba(0, 204, 255, 0.05);
+}
+
+/* ==========================================================================
+   SHEET BODY
+   ========================================================================== */
+
+.spelljammer-sheet .sheet-body {
+  padding: 15px;
+  overflow-y: auto;
+  max-height: calc(100% - 200px);
+}
+
+.spelljammer-sheet .tab {
+  display: none;
+}
+
+.spelljammer-sheet .tab.active {
+  display: block;
+}
+
+/* ==========================================================================
+   CREW STATIONS
+   ========================================================================== */
+
+.spelljammer-sheet .crew-stations {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+}
+
+.spelljammer-sheet .crew-station {
+  background: var(--sj-card-bg);
+  border: 1px solid var(--sj-border-color);
+  border-radius: 8px;
+  padding: 15px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Scanner effect */
+.y2k-theme .crew-station::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, var(--sj-accent-cyan) 50%, transparent 100%);
+  opacity: 0.7;
+  animation: scanner 3s infinite;
+}
+
+@keyframes scanner {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.spelljammer-sheet .station-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--sj-border-color);
+  padding-bottom: 8px;
+}
+
+.spelljammer-sheet .station-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.spelljammer-sheet .captain-station .station-header h2 { color: var(--sj-accent-purple); }
+.spelljammer-sheet .helmsman-station .station-header h2 { color: var(--sj-accent-cyan); }
+.spelljammer-sheet .gunner-station .station-header h2 { color: var(--sj-accent-pink); }
+.spelljammer-sheet .boatswain-station .station-header h2 { color: var(--sj-accent); }
+
+.spelljammer-sheet .ability-tag {
+  font-size: 0.7rem;
+  background: var(--sj-secondary);
+  color: white;
+  padding: 3px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+}
+
+/* ==========================================================================
+   CREW ASSIGNMENT
+   ========================================================================== */
+
+.spelljammer-sheet .crew-slot {
+  margin-bottom: 12px;
+}
+
+.spelljammer-sheet .assigned-crew {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(0, 204, 255, 0.05);
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid var(--sj-border-color);
+}
+
+.spelljammer-sheet .crew-portrait {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid var(--sj-accent-cyan);
+  object-fit: cover;
+}
+
+.spelljammer-sheet .crew-details {
+  flex: 1;
+}
+
+.spelljammer-sheet .crew-name {
+  font-weight: bold;
+  font-size: 1rem;
+  display: block;
+}
+
+.spelljammer-sheet .crew-stats {
+  font-size: 0.8rem;
+  color: var(--sj-secondary);
+}
+
+.spelljammer-sheet .remove-crew {
+  background: var(--sj-danger);
+  color: white;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.spelljammer-sheet .remove-crew:hover {
+  background: #c0392b;
+  transform: scale(1.1);
+}
+
+/* Crew Dropzone */
+.spelljammer-sheet .crew-dropzone {
+  border: 2px dashed var(--sj-border-color);
+  border-radius: 6px;
+  padding: 15px;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.spelljammer-sheet .crew-dropzone:hover,
+.spelljammer-sheet .crew-dropzone.dragover {
+  border-color: var(--sj-accent-cyan);
+  background: rgba(0, 204, 255, 0.1);
+}
+
+.spelljammer-sheet .drop-hint {
+  color: var(--sj-secondary);
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+}
+
+.spelljammer-sheet .crew-select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--sj-border-color);
+  border-radius: 4px;
+  background: var(--sj-card-bg);
+  color: var(--sj-text);
+}
+
+/* ==========================================================================
+   STATION ACTIONS
+   ========================================================================== */
+
+.spelljammer-sheet .station-actions {
+  margin-top: 10px;
+}
+
+.spelljammer-sheet .action-group {
+  margin-bottom: 12px;
+}
+
+.spelljammer-sheet .action-group h3 {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  color: var(--sj-secondary);
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+}
+
+.spelljammer-sheet .station-actions button {
+  background: linear-gradient(135deg, var(--sj-primary), var(--sj-secondary));
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  margin: 2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.spelljammer-sheet .station-actions button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--sj-shadow-color);
+}
+
+.spelljammer-sheet .station-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Order buttons */
+.spelljammer-sheet .order-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.spelljammer-sheet .captain-order[data-order="offensive"] {
+  background: linear-gradient(135deg, #d32f2f, #b71c1c);
+}
+
+.spelljammer-sheet .captain-order[data-order="engineering"] {
+  background: linear-gradient(135deg, #388e3c, #2e7d32);
+}
+
+.spelljammer-sheet .captain-order[data-order="tactical"] {
+  background: linear-gradient(135deg, #1976d2, #1565c0);
+}
+
+/* ==========================================================================
+   STATION INFO
+   ========================================================================== */
+
+.spelljammer-sheet .station-info {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--sj-border-color);
+  font-size: 0.75rem;
+  color: var(--sj-secondary);
+}
+
+.spelljammer-sheet .station-info p {
+  margin: 4px 0;
+}
+
+/* ==========================================================================
+   VELOCITY DISPLAY
+   ========================================================================== */
+
+.spelljammer-sheet .velocity-display {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: rgba(0, 204, 255, 0.1);
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.spelljammer-sheet .velocity-current {
+  text-align: center;
+}
+
+.spelljammer-sheet .velocity-value {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--sj-accent-cyan);
+  display: block;
+}
+
+.spelljammer-sheet .velocity-unit {
+  font-size: 0.7rem;
+  color: var(--sj-secondary);
+  text-transform: uppercase;
+}
+
+.spelljammer-sheet .velocity-direction {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.spelljammer-sheet .direction-arrow {
+  font-size: 1.5rem;
+  color: var(--sj-accent);
+}
+
+.spelljammer-sheet .direction-label {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+/* ==========================================================================
+   GUNNER SLOTS
+   ========================================================================== */
+
+.spelljammer-sheet .gunner-slots {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.spelljammer-sheet .gunner-slot {
+  background: rgba(0, 0, 0, 0.05);
+  padding: 10px;
+  border-radius: 6px;
+}
+
+.spelljammer-sheet .gunner-slot h3 {
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+  color: var(--sj-accent-pink);
+}
+
+/* ==========================================================================
+   POWER CHARGES
+   ========================================================================== */
+
+.spelljammer-sheet .power-charges-display {
+  background: rgba(255, 179, 71, 0.1);
+  padding: 15px;
+  border-radius: 8px;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.spelljammer-sheet .charge-icons {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.spelljammer-sheet .charge-icon {
+  font-size: 1.5rem;
+  color: var(--sj-accent);
+  text-shadow: 0 0 10px var(--sj-accent);
+}
+
+/* ==========================================================================
+   MODULES TAB
+   ========================================================================== */
+
+.spelljammer-sheet .modules-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+}
+
+.spelljammer-sheet .module-card {
+  background: var(--sj-card-bg);
+  border: 1px solid var(--sj-border-color);
+  border-radius: 8px;
+  padding: 15px;
+  transition: all 0.2s;
+}
+
+.spelljammer-sheet .module-card.active {
+  border-color: var(--sj-success);
+  box-shadow: 0 0 15px rgba(46, 204, 113, 0.3);
+}
+
+.spelljammer-sheet .module-card.disabled {
+  opacity: 0.5;
+}
+
+.spelljammer-sheet .module-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.spelljammer-sheet .module-header h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.spelljammer-sheet .module-cost {
+  background: var(--sj-accent);
+  color: #000;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.spelljammer-sheet .module-hp {
+  position: relative;
+  height: 20px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.spelljammer-sheet .module-hp .hp-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: linear-gradient(90deg, var(--sj-success), var(--sj-accent));
+  transition: width 0.3s;
+}
+
+.spelljammer-sheet .module-hp .hp-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.spelljammer-sheet .module-effect {
+  font-size: 0.85rem;
+  color: var(--sj-secondary);
+  margin-bottom: 10px;
+}
+
+.spelljammer-sheet .module-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.spelljammer-sheet .module-controls button {
+  flex: 1;
+  padding: 8px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.spelljammer-sheet .allocate-power {
+  background: var(--sj-accent);
+  color: #000;
+}
+
+.spelljammer-sheet .toggle-module {
+  background: var(--sj-secondary);
+  color: white;
+}
+
+/* ==========================================================================
+   WEAPONS TAB
+   ========================================================================== */
+
+.spelljammer-sheet .weapons-list {
+  display: grid;
+  gap: 15px;
+}
+
+.spelljammer-sheet .weapon-card {
+  background: var(--sj-card-bg);
+  border: 1px solid var(--sj-border-color);
+  border-radius: 8px;
+  padding: 15px;
+}
+
+.spelljammer-sheet .weapon-card.disabled {
+  opacity: 0.5;
+}
+
+.spelljammer-sheet .weapon-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.spelljammer-sheet .weapon-header h3 {
+  margin: 0;
+  color: var(--sj-accent-pink);
+}
+
+.spelljammer-sheet .weapon-hp {
+  width: 80px;
+  height: 16px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+}
+
+.spelljammer-sheet .weapon-hp .hp-bar {
+  height: 100%;
+  background: var(--sj-success);
+}
+
+.spelljammer-sheet .weapon-hp .hp-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.65rem;
+  color: white;
+}
+
+.spelljammer-sheet .weapon-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.spelljammer-sheet .weapon-stats .stat {
+  text-align: center;
+}
+
+.spelljammer-sheet .weapon-stats .stat-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  color: var(--sj-secondary);
+}
+
+.spelljammer-sheet .weapon-stats .stat-value {
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.spelljammer-sheet .weapon-properties {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.spelljammer-sheet .property-tag {
+  background: var(--sj-accent-purple);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+}
+
+.spelljammer-sheet .weapon-gunner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.spelljammer-sheet .weapon-gunner label {
+  font-size: 0.85rem;
+  color: var(--sj-secondary);
+}
+
+.spelljammer-sheet .weapon-gunner-select {
+  flex: 1;
+  padding: 6px;
+  border: 1px solid var(--sj-border-color);
+  border-radius: 4px;
+  background: var(--sj-card-bg);
+  color: var(--sj-text);
+}
+
+.spelljammer-sheet .weapon-attack-info {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 10px;
+  font-weight: bold;
+  color: var(--sj-accent-cyan);
+}
+
+.spelljammer-sheet .weapon-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.spelljammer-sheet .weapon-actions button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.spelljammer-sheet .roll-weapon-attack {
+  background: linear-gradient(135deg, var(--sj-primary), var(--sj-secondary));
+  color: white;
+}
+
+.spelljammer-sheet .roll-weapon-damage {
+  background: linear-gradient(135deg, var(--sj-danger), #c0392b);
+  color: white;
+}
+
+/* ==========================================================================
+   MOVEMENT TAB
+   ========================================================================== */
+
+.spelljammer-sheet .velocity-panel {
+  padding: 10px;
+}
+
+.spelljammer-sheet .velocity-display-large {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  background: linear-gradient(135deg, rgba(0, 204, 255, 0.1), rgba(0, 204, 255, 0.05));
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  border: 1px solid var(--sj-border-color);
+}
+
+.spelljammer-sheet .velocity-main .velocity-number {
+  font-size: 3rem;
+  font-weight: bold;
+  color: var(--sj-accent-cyan);
+  text-shadow: 0 0 20px rgba(0, 204, 255, 0.5);
+}
+
+.spelljammer-sheet .compass {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  max-width: 120px;
+  margin-bottom: 10px;
+}
+
+.spelljammer-sheet .compass-point {
+  padding: 5px 8px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.spelljammer-sheet .compass-point.active {
+  background: var(--sj-accent-cyan);
+  color: #000;
+  font-weight: bold;
+}
+
+.spelljammer-sheet .movement-limits {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.spelljammer-sheet .limit-box {
+  flex: 1;
+  background: var(--sj-card-bg);
+  border: 1px solid var(--sj-border-color);
+  padding: 15px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.spelljammer-sheet .limit-label {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--sj-secondary);
+  margin-bottom: 5px;
+}
+
+.spelljammer-sheet .limit-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--sj-accent);
+}
+
+.spelljammer-sheet .velocity-buttons {
+  margin-bottom: 20px;
+}
+
+.spelljammer-sheet .velocity-buttons h3 {
+  margin-bottom: 10px;
+  color: var(--sj-secondary);
+}
+
+.spelljammer-sheet .button-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.spelljammer-sheet .velocity-adjust {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  background: var(--sj-primary);
+  color: white;
+  transition: all 0.2s;
+}
+
+.spelljammer-sheet .velocity-adjust:hover {
+  transform: translateY(-2px);
+}
+
+.spelljammer-sheet .velocity-adjust.danger {
+  background: var(--sj-danger);
+}
+
+/* Action cards */
+.spelljammer-sheet .helmsman-actions {
+  margin-bottom: 20px;
+}
+
+.spelljammer-sheet .action-card {
+  background: var(--sj-card-bg);
+  border: 1px solid var(--sj-border-color);
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 10px;
+}
+
+.spelljammer-sheet .action-card h4 {
+  margin: 0 0 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.spelljammer-sheet .action-card p {
+  font-size: 0.85rem;
+  color: var(--sj-secondary);
+  margin-bottom: 10px;
+}
+
+/* DC Table */
+.spelljammer-sheet .dc-table {
+  margin-bottom: 20px;
+}
+
+.spelljammer-sheet .dc-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.spelljammer-sheet .dc-table th,
+.spelljammer-sheet .dc-table td {
+  padding: 8px;
+  border: 1px solid var(--sj-border-color);
+  text-align: center;
+}
+
+.spelljammer-sheet .dc-table th {
+  background: var(--sj-secondary);
+  color: white;
+}
+
+.spelljammer-sheet .dc-table tr.current {
+  background: rgba(0, 204, 255, 0.2);
+  font-weight: bold;
+}
+
+/* Collision info */
+.spelljammer-sheet .collision-info {
+  background: rgba(231, 76, 60, 0.1);
+  border: 1px solid var(--sj-danger);
+  border-radius: 8px;
+  padding: 15px;
+}
+
+.spelljammer-sheet .collision-info h3 {
+  color: var(--sj-danger);
+  margin-bottom: 10px;
+}
+
+.spelljammer-sheet .collision-info ul {
+  margin: 10px 0;
+  padding-left: 20px;
+}
+
+/* ==========================================================================
+   CHAT MESSAGES
+   ========================================================================== */
+
+.spelljammer-chat {
+  padding: 10px;
+  border-radius: 4px;
+  background: linear-gradient(135deg, rgba(0, 204, 255, 0.1), transparent);
+  border-left: 3px solid var(--sj-accent-cyan);
+}
+
+.spelljammer-chat h3 {
+  margin: 0 0 8px 0;
+  color: var(--sj-accent-cyan);
+}
+
+.spelljammer-chat p {
+  margin: 4px 0;
+}
+
+.spelljammer-chat .warning {
+  color: var(--sj-warning);
+}
+
+.spelljammer-chat .success {
+  color: var(--sj-success);
+  font-weight: bold;
+}
+
+.spelljammer-chat .failure {
+  color: var(--sj-danger);
+  font-weight: bold;
+}
+
+.spelljammer-chat .powered {
+  color: var(--sj-accent);
+  font-weight: bold;
+}
+
+/* ==========================================================================
+   UTILITIES
+   ========================================================================== */
+
+.spelljammer-sheet .warning {
+  color: var(--sj-warning);
+}
+
+.spelljammer-sheet .no-weapons {
+  text-align: center;
+  padding: 30px;
+  color: var(--sj-secondary);
+}
+
+.spelljammer-sheet .no-weapons .hint {
+  font-size: 0.85rem;
+  margin-top: 10px;
+}
+
+.spelljammer-sheet .weapons-info,
+.spelljammer-sheet .boatswain-info {
+  background: rgba(0, 0, 0, 0.05);
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.spelljammer-sheet .weapons-info h3,
+.spelljammer-sheet .weapons-info h4 {
+  color: var(--sj-accent-cyan);
+  margin-bottom: 10px;
+}
+
+.spelljammer-sheet .weapons-info ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.spelljammer-sheet .weapons-info li {
+  margin-bottom: 5px;
+}

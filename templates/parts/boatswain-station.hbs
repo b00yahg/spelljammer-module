@@ -1,0 +1,95 @@
+{{!-- Boatswain Station --}}
+<div class="crew-station boatswain-station">
+  <div class="station-header">
+    <h2><i class="fas fa-bolt"></i> Boatswain</h2>
+    <span class="ability-tag">Prof = Power Charges</span>
+  </div>
+
+  {{!-- Crew Assignment --}}
+  <div class="crew-slot">
+    {{#if spelljammer.crew.boatswain}}
+      <div class="assigned-crew">
+        <img src="{{spelljammer.crew.boatswain.img}}" alt="{{spelljammer.crew.boatswain.name}}" class="crew-portrait" />
+        <div class="crew-details">
+          <span class="crew-name">{{spelljammer.crew.boatswain.name}}</span>
+          <span class="crew-stats">
+            Prof +{{spelljammer.crew.boatswain.prof}} | {{spelljammer.crew.boatswain.prof}} charges/turn
+          </span>
+        </div>
+        <button type="button" class="remove-crew" data-role="boatswain">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    {{else}}
+      <div class="crew-dropzone" data-role="boatswain">
+        <p class="drop-hint"><i class="fas fa-user-plus"></i> Drag character here</p>
+        <select class="crew-select" data-role="boatswain">
+          <option value="">-- Assign Boatswain --</option>
+          {{#each spelljammer.availableCharacters as |char|}}
+            <option value="{{char.id}}">{{char.name}}</option>
+          {{/each}}
+        </select>
+      </div>
+    {{/if}}
+  </div>
+
+  {{!-- Power Charge Display --}}
+  {{#if spelljammer.crew.boatswain}}
+    <div class="power-charges-display">
+      <h3>Power Charges Available</h3>
+      <div class="charge-icons">
+        {{#sjTimes spelljammer.crew.boatswain.prof}}
+          <span class="charge-icon"><i class="fas fa-bolt"></i></span>
+        {{/sjTimes}}
+      </div>
+      <p class="charge-count">{{spelljammer.crew.boatswain.prof}} charges per turn</p>
+    </div>
+  {{/if}}
+
+  {{!-- Quick Module Allocation --}}
+  <div class="station-actions">
+    <div class="action-group">
+      <h3>Quick Allocate</h3>
+      <div class="module-quick-buttons">
+        <button type="button" class="allocate-power" data-module-id="weaponsArray"
+                {{#unless spelljammer.crew.boatswain}}disabled{{/unless}}
+                title="+1d6 damage to all attacks">
+          <i class="fas fa-crosshairs"></i> Weapons
+        </button>
+        <button type="button" class="allocate-power" data-module-id="deflectorGrid"
+                {{#unless spelljammer.crew.boatswain}}disabled{{/unless}}
+                title="Resistance to one damage type">
+          <i class="fas fa-shield-alt"></i> Deflector
+        </button>
+        <button type="button" class="allocate-power" data-module-id="thrusterOverride"
+                {{#unless spelljammer.crew.boatswain}}disabled{{/unless}}
+                title="+100 ft max acceleration/deceleration">
+          <i class="fas fa-rocket"></i> Thruster
+        </button>
+        <button type="button" class="allocate-power" data-module-id="hullReinforcement"
+                {{#unless spelljammer.crew.boatswain}}disabled{{/unless}}
+                title="Gain 2d8 temp HP">
+          <i class="fas fa-hard-hat"></i> Hull
+        </button>
+      </div>
+    </div>
+
+    <div class="action-group">
+      <h3>Special Actions</h3>
+      <button type="button" class="boatswain-action" data-action="arcaneOverclock"
+              {{#unless spelljammer.crew.boatswain}}disabled{{/unless}}>
+        <i class="fas fa-magic"></i> Arcane Overclock (Spell Slot)
+      </button>
+      <button type="button" class="boatswain-action" data-action="emergencyHotfix"
+              {{#unless spelljammer.crew.boatswain}}disabled{{/unless}}>
+        <i class="fas fa-wrench"></i> Emergency Hotfix (Reaction)
+      </button>
+    </div>
+  </div>
+
+  <div class="station-info">
+    <p><strong>Power Charges:</strong> Equal to Proficiency Bonus per turn</p>
+    <p><strong>Arcane Overclock:</strong> Spend spell slot for extra charges = slot level</p>
+    <p><strong>Emergency Hotfix:</strong> Reallocate 1 charge when ship &lt; 50% HP</p>
+  </div>
+</div>

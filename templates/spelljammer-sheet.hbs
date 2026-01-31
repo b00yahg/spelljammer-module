@@ -1,0 +1,108 @@
+<form class="spelljammer-sheet {{#if y2kTheme}}y2k-theme{{/if}}" autocomplete="off">
+  {{!-- HEADER --}}
+  <header class="sheet-header">
+    <div class="ship-portrait">
+      <img src="{{actor.img}}" alt="{{actor.name}}" data-edit="img" />
+    </div>
+    <div class="ship-info">
+      <h1 class="ship-name">
+        <input type="text" name="name" value="{{actor.name}}" placeholder="Ship Name" />
+      </h1>
+      <div class="ship-class">{{spelljammer.shipClass}}</div>
+      <div class="ship-stats">
+        <div class="stat-box">
+          <span class="stat-label">AC</span>
+          <span class="stat-value">{{actor.system.attributes.ac.flat}}</span>
+        </div>
+        <div class="stat-box hp-box">
+          <span class="stat-label">Hull Points</span>
+          <div class="hp-display">
+            <input type="number" name="system.attributes.hp.value" value="{{actor.system.attributes.hp.value}}" />
+            <span class="hp-separator">/</span>
+            <input type="number" name="system.attributes.hp.max" value="{{actor.system.attributes.hp.max}}" />
+          </div>
+        </div>
+        <div class="stat-box velocity-box">
+          <span class="stat-label">Velocity</span>
+          <span class="stat-value">{{spelljammer.velocity.current}} ft {{spelljammer.velocity.direction}}</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  {{!-- NAVIGATION TABS --}}
+  <nav class="sheet-tabs tabs" data-group="primary">
+    <a class="item" data-tab="bridge">Bridge</a>
+    <a class="item" data-tab="weapons">Weapons</a>
+    <a class="item" data-tab="modules">Modules</a>
+    <a class="item" data-tab="movement">Movement</a>
+  </nav>
+
+  {{!-- SHEET BODY --}}
+  <section class="sheet-body">
+
+    {{!-- BRIDGE TAB --}}
+    <div class="tab bridge-tab" data-group="primary" data-tab="bridge">
+      <div class="crew-stations">
+        {{!-- Captain Station --}}
+        {{> "modules/spelljammer-module/templates/parts/captain-station.hbs"}}
+
+        {{!-- Helmsman Station --}}
+        {{> "modules/spelljammer-module/templates/parts/helmsman-station.hbs"}}
+
+        {{!-- Gunner Stations --}}
+        {{> "modules/spelljammer-module/templates/parts/gunner-station.hbs"}}
+
+        {{!-- Boatswain Station --}}
+        {{> "modules/spelljammer-module/templates/parts/boatswain-station.hbs"}}
+      </div>
+    </div>
+
+    {{!-- WEAPONS TAB --}}
+    <div class="tab weapons-tab" data-group="primary" data-tab="weapons">
+      {{> "modules/spelljammer-module/templates/parts/weapons-panel.hbs"}}
+    </div>
+
+    {{!-- MODULES TAB --}}
+    <div class="tab modules-tab" data-group="primary" data-tab="modules">
+      <h2>Power Modules</h2>
+      <div class="boatswain-info">
+        {{#if spelljammer.crew.boatswain}}
+          <p><strong>Boatswain:</strong> {{spelljammer.crew.boatswain.name}}</p>
+          <p><strong>Power Charges:</strong> {{spelljammer.crew.boatswain.prof}} per turn</p>
+        {{else}}
+          <p class="warning">No Boatswain assigned! Power modules cannot be activated.</p>
+        {{/if}}
+      </div>
+      <div class="modules-grid">
+        {{#each spelljammer.modules as |module|}}
+          <div class="module-card {{#if module.active}}active{{/if}} {{#if module.isDisabled}}disabled{{/if}}">
+            <div class="module-header">
+              <h3>{{module.name}}</h3>
+              <span class="module-cost">{{module.cost}} charge{{#if (sjGt module.cost 1)}}s{{/if}}</span>
+            </div>
+            <div class="module-hp">
+              <span class="hp-bar" style="width: {{sjDiv (sjMul module.hp 100) module.maxHp}}%"></span>
+              <span class="hp-text">{{module.hp}}/{{module.maxHp}} HP</span>
+            </div>
+            <p class="module-effect">{{module.effect}}</p>
+            <div class="module-controls">
+              <button type="button" class="allocate-power" data-module-id="{{module.id}}" {{#unless module.canActivate}}disabled{{/unless}}>
+                Allocate Power
+              </button>
+              <button type="button" class="toggle-module" data-module-id="{{module.id}}" {{#if module.isDisabled}}disabled{{/if}}>
+                {{#if module.active}}Deactivate{{else}}Activate{{/if}}
+              </button>
+            </div>
+          </div>
+        {{/each}}
+      </div>
+    </div>
+
+    {{!-- MOVEMENT TAB --}}
+    <div class="tab movement-tab" data-group="primary" data-tab="movement">
+      {{> "modules/spelljammer-module/templates/parts/velocity-panel.hbs"}}
+    </div>
+
+  </section>
+</form>

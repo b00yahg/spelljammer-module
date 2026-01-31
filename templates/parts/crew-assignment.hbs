@@ -1,0 +1,42 @@
+{{!--
+  Crew Assignment Component
+  Usage: {{> "modules/spelljammer-module/templates/parts/crew-assignment.hbs"
+          role="captain"
+          crewMember=spelljammer.crew.captain
+          availableCharacters=spelljammer.availableCharacters}}
+--}}
+
+<div class="crew-assignment">
+  {{#if crewMember}}
+    <div class="assigned-crew">
+      <img src="{{crewMember.img}}" alt="{{crewMember.name}}" class="crew-portrait" />
+      <div class="crew-details">
+        <span class="crew-name">{{crewMember.name}}</span>
+        <span class="crew-stats">
+          {{#if (sjEq role "captain")}}
+            CHA {{sjFormatMod crewMember.cha}} | Prof +{{crewMember.prof}}
+          {{else if (sjEq role "helmsman")}}
+            WIS {{sjFormatMod crewMember.wis}} | Prof +{{crewMember.prof}}
+          {{else if (sjEq role "gunner")}}
+            DEX {{sjFormatMod crewMember.dex}} | Prof +{{crewMember.prof}}
+          {{else if (sjEq role "boatswain")}}
+            Prof +{{crewMember.prof}} ({{crewMember.prof}} charges/turn)
+          {{/if}}
+        </span>
+      </div>
+      <button type="button" class="remove-crew" data-role="{{role}}" {{#if gunnerIndex}}data-gunner-index="{{gunnerIndex}}"{{/if}}>
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  {{else}}
+    <div class="crew-dropzone" data-role="{{role}}" {{#if gunnerIndex}}data-gunner-index="{{gunnerIndex}}"{{/if}}>
+      <p class="drop-hint"><i class="fas fa-user-plus"></i> Drag character here</p>
+      <select class="crew-select" data-role="{{role}}" {{#if gunnerIndex}}data-gunner-index="{{gunnerIndex}}"{{/if}}>
+        <option value="">-- Select Crew --</option>
+        {{#each availableCharacters as |char|}}
+          <option value="{{char.id}}">{{char.name}}</option>
+        {{/each}}
+      </select>
+    </div>
+  {{/if}}
+</div>
