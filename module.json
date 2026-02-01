@@ -43,7 +43,7 @@
     {
       "name": "spelljammer-ships",
       "label": "Spelljammer Ships",
-      "path": "packs/ships",
+      "path": "packs/ships.db",
       "type": "Actor",
       "system": "dnd5e"
     }

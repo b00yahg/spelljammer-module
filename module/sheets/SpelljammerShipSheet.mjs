@@ -35,54 +35,79 @@ export class SpelljammerShipSheet extends ActorSheet {
     const context = await super.getData(options);
     const actor = this.actor;
 
-    // Ensure Spelljammer data is initialized
-    await this._ensureSpelljammerData();
+    try {
+      // Ensure Spelljammer data is initialized
+      await this._ensureSpelljammerData();
 
-    // Get all Spelljammer flags
-    const sjData = this._getSpelljammerData();
+      // Get all Spelljammer flags
+      const sjData = this._getSpelljammerData();
 
-    // Resolve crew assignments to actual actor objects
-    const resolvedCrew = await this._resolveCrewAssignments(sjData.crewAssignments);
+      // Resolve crew assignments to actual actor objects
+      const resolvedCrew = await this._resolveCrewAssignments(sjData.crewAssignments);
 
-    // Get available characters for assignment
-    const availableCharacters = this._getAvailableCharacters(sjData.crewAssignments);
+      // Get available characters for assignment
+      const availableCharacters = this._getAvailableCharacters(sjData.crewAssignments);
 
-    // Prepare weapons with computed attack bonuses
-    const preparedWeapons = this._prepareWeapons(sjData.weapons, resolvedCrew);
+      // Prepare weapons with computed attack bonuses
+      const preparedWeapons = this._prepareWeapons(sjData.weapons, resolvedCrew);
 
-    // Prepare power module display data
-    const preparedModules = this._preparePowerModules(sjData.powerModules, resolvedCrew.boatswain);
+      // Prepare power module display data
+      const preparedModules = this._preparePowerModules(sjData.powerModules, resolvedCrew.boatswain);
 
-    // Calculate power charges
-    const boatswainProf = resolvedCrew.boatswain?.prof ?? 0;
-    const bonusCharge = sjData.combat?.activeOrder === "engineering" ? 1 : 0;
-    const totalCharges = boatswainProf + bonusCharge;
-    const usedCharges = sjData.powerCharges?.used ?? 0;
-    const availableCharges = Math.max(0, totalCharges - usedCharges);
+      // Calculate power charges
+      const boatswainProf = resolvedCrew.boatswain?.prof ?? 0;
+      const bonusCharge = sjData.combat?.activeOrder === "engineering" ? 1 : 0;
+      const totalCharges = boatswainProf + bonusCharge;
+      const usedCharges = sjData.powerCharges?.used ?? 0;
+      const availableCharges = Math.max(0, totalCharges - usedCharges);
 
-    // Y2K theme setting
-    const y2kTheme = game.settings.get(MODULE_ID, "y2kTheme");
-
-    // Build context
-    context.spelljammer = {
-      ...sjData,
-      crew: resolvedCrew,
-      availableCharacters,
-      weapons: preparedWeapons,
-      modules: preparedModules,
-      isSinglePilot: sjData.singlePilot || false,
-      power: {
-        total: totalCharges,
-        used: usedCharges,
-        available: availableCharges,
-        bonusFromOrder: bonusCharge > 0
+      // Y2K theme setting - with fallback
+      let y2kTheme = true;
+      try {
+        y2kTheme = game.settings.get(MODULE_ID, "y2kTheme");
+      } catch (e) {
+        console.log(`${MODULE_ID} | Settings not yet registered, using defaults`);
       }
-    };
 
-    context.y2kTheme = y2kTheme;
-    context.isGM = game.user.isGM;
-    context.isOwner = actor.isOwner;
-    context.directions = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
+      // Build context
+      context.spelljammer = {
+        ...sjData,
+        crew: resolvedCrew,
+        availableCharacters,
+        weapons: preparedWeapons,
+        modules: preparedModules,
+        isSinglePilot: sjData.singlePilot || false,
+        power: {
+          total: totalCharges,
+          used: usedCharges,
+          available: availableCharges,
+          bonusFromOrder: bonusCharge > 0
+        }
+      };
+
+      context.y2kTheme = y2kTheme;
+      context.isGM = game.user.isGM;
+      context.isOwner = actor.isOwner;
+      context.directions = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
+
+    } catch (error) {
+      console.error(`${MODULE_ID} | Error in getData:`, error);
+      // Provide minimal context to prevent blank sheet
+      context.spelljammer = {
+        shipClass: "Unknown",
+        velocity: { current: 0, direction: "N", maxAcceleration: 200, maxDeceleration: 200 },
+        crew: { captain: null, helmsman: null, gunners: [], boatswain: null },
+        availableCharacters: [],
+        weapons: [],
+        modules: [],
+        power: { total: 0, used: 0, available: 0, bonusFromOrder: false },
+        powerModules: {}
+      };
+      context.y2kTheme = true;
+      context.isGM = game.user?.isGM ?? false;
+      context.isOwner = actor?.isOwner ?? false;
+      context.directions = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
+    }
 
     return context;
   }
