@@ -5,7 +5,7 @@
 
 import { SpelljammerRolls } from "../helpers/rolls.mjs";
 
-const MODULE_ID = "spelljammer-module";
+const MODULE_ID = "spelljammer-combat";
 
 export class SpelljammerShipSheet extends ActorSheet {
 

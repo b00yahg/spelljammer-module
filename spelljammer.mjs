@@ -6,7 +6,7 @@
 import { SpelljammerShipSheet } from "./module/sheets/SpelljammerShipSheet.mjs";
 import { SpelljammerRolls } from "./module/helpers/rolls.mjs";
 
-const MODULE_ID = "spelljammer-module";
+const MODULE_ID = "spelljammer-combat";
 
 /**
  * Default data structure for Spelljammer ships
