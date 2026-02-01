@@ -12,13 +12,13 @@
       <div class="gunner-slot">
         <h3>Gunner</h3>
         <div class="crew-slot">
-          {{#with (sjIndex spelljammer.crew.gunners 0)}}
+          {{#if spelljammer.crew.gunners.[0]}}
             <div class="assigned-crew">
-              <img src="{{this.img}}" alt="{{this.name}}" class="crew-portrait" />
+              <img src="{{spelljammer.crew.gunners.[0].img}}" alt="{{spelljammer.crew.gunners.[0].name}}" class="crew-portrait" />
               <div class="crew-details">
-                <span class="crew-name">{{this.name}}</span>
+                <span class="crew-name">{{spelljammer.crew.gunners.[0].name}}</span>
                 <span class="crew-stats">
-                  DEX {{sjFormatMod this.dex}} | Attack +{{this.attackBonus}}
+                  DEX {{sjFormatMod spelljammer.crew.gunners.[0].dex}} | Attack +{{spelljammer.crew.gunners.[0].attackBonus}}
                 </span>
               </div>
               <button type="button" class="remove-crew" data-role="gunner" data-gunner-index="0">
@@ -30,47 +30,139 @@
               <p class="drop-hint"><i class="fas fa-user-plus"></i> Drag character here</p>
               <select class="crew-select" data-role="gunner" data-gunner-index="0">
                 <option value="">-- Assign Gunner --</option>
-                {{#each ../spelljammer.availableCharacters as |char|}}
+                {{#each spelljammer.availableCharacters as |char|}}
                   <option value="{{char.id}}">{{char.name}}</option>
                 {{/each}}
               </select>
             </div>
-          {{/with}}
+          {{/if}}
         </div>
       </div>
     {{else}}
       {{!-- Standard mode - up to 4 gunner slots --}}
-      {{#sjTimes 4}}
-        <div class="gunner-slot">
-          <h3>Gunner {{sjAdd index 1}}</h3>
-          <div class="crew-slot">
-            {{#with (sjIndex ../../spelljammer.crew.gunners index)}}
-              <div class="assigned-crew">
-                <img src="{{this.img}}" alt="{{this.name}}" class="crew-portrait" />
-                <div class="crew-details">
-                  <span class="crew-name">{{this.name}}</span>
-                  <span class="crew-stats">
-                    DEX {{sjFormatMod this.dex}} | Attack +{{this.attackBonus}}
-                  </span>
-                </div>
-                <button type="button" class="remove-crew" data-role="gunner" data-gunner-index="{{../index}}">
-                  <i class="fas fa-times"></i>
-                </button>
+      {{!-- Gunner 1 --}}
+      <div class="gunner-slot">
+        <h3>Gunner 1</h3>
+        <div class="crew-slot">
+          {{#if spelljammer.crew.gunners.[0]}}
+            <div class="assigned-crew">
+              <img src="{{spelljammer.crew.gunners.[0].img}}" alt="{{spelljammer.crew.gunners.[0].name}}" class="crew-portrait" />
+              <div class="crew-details">
+                <span class="crew-name">{{spelljammer.crew.gunners.[0].name}}</span>
+                <span class="crew-stats">
+                  DEX {{sjFormatMod spelljammer.crew.gunners.[0].dex}} | Attack +{{spelljammer.crew.gunners.[0].attackBonus}}
+                </span>
               </div>
-            {{else}}
-              <div class="crew-dropzone" data-role="gunner" data-gunner-index="{{index}}">
-                <p class="drop-hint"><i class="fas fa-user-plus"></i> Drag character here</p>
-                <select class="crew-select" data-role="gunner" data-gunner-index="{{index}}">
-                  <option value="">-- Assign Gunner --</option>
-                  {{#each ../../spelljammer.availableCharacters as |char|}}
-                    <option value="{{char.id}}">{{char.name}}</option>
-                  {{/each}}
-                </select>
-              </div>
-            {{/with}}
-          </div>
+              <button type="button" class="remove-crew" data-role="gunner" data-gunner-index="0">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          {{else}}
+            <div class="crew-dropzone" data-role="gunner" data-gunner-index="0">
+              <p class="drop-hint"><i class="fas fa-user-plus"></i> Drag character here</p>
+              <select class="crew-select" data-role="gunner" data-gunner-index="0">
+                <option value="">-- Assign Gunner --</option>
+                {{#each spelljammer.availableCharacters as |char|}}
+                  <option value="{{char.id}}">{{char.name}}</option>
+                {{/each}}
+              </select>
+            </div>
+          {{/if}}
         </div>
-      {{/sjTimes}}
+      </div>
+
+      {{!-- Gunner 2 --}}
+      <div class="gunner-slot">
+        <h3>Gunner 2</h3>
+        <div class="crew-slot">
+          {{#if spelljammer.crew.gunners.[1]}}
+            <div class="assigned-crew">
+              <img src="{{spelljammer.crew.gunners.[1].img}}" alt="{{spelljammer.crew.gunners.[1].name}}" class="crew-portrait" />
+              <div class="crew-details">
+                <span class="crew-name">{{spelljammer.crew.gunners.[1].name}}</span>
+                <span class="crew-stats">
+                  DEX {{sjFormatMod spelljammer.crew.gunners.[1].dex}} | Attack +{{spelljammer.crew.gunners.[1].attackBonus}}
+                </span>
+              </div>
+              <button type="button" class="remove-crew" data-role="gunner" data-gunner-index="1">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          {{else}}
+            <div class="crew-dropzone" data-role="gunner" data-gunner-index="1">
+              <p class="drop-hint"><i class="fas fa-user-plus"></i> Drag character here</p>
+              <select class="crew-select" data-role="gunner" data-gunner-index="1">
+                <option value="">-- Assign Gunner --</option>
+                {{#each spelljammer.availableCharacters as |char|}}
+                  <option value="{{char.id}}">{{char.name}}</option>
+                {{/each}}
+              </select>
+            </div>
+          {{/if}}
+        </div>
+      </div>
+
+      {{!-- Gunner 3 --}}
+      <div class="gunner-slot">
+        <h3>Gunner 3</h3>
+        <div class="crew-slot">
+          {{#if spelljammer.crew.gunners.[2]}}
+            <div class="assigned-crew">
+              <img src="{{spelljammer.crew.gunners.[2].img}}" alt="{{spelljammer.crew.gunners.[2].name}}" class="crew-portrait" />
+              <div class="crew-details">
+                <span class="crew-name">{{spelljammer.crew.gunners.[2].name}}</span>
+                <span class="crew-stats">
+                  DEX {{sjFormatMod spelljammer.crew.gunners.[2].dex}} | Attack +{{spelljammer.crew.gunners.[2].attackBonus}}
+                </span>
+              </div>
+              <button type="button" class="remove-crew" data-role="gunner" data-gunner-index="2">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          {{else}}
+            <div class="crew-dropzone" data-role="gunner" data-gunner-index="2">
+              <p class="drop-hint"><i class="fas fa-user-plus"></i> Drag character here</p>
+              <select class="crew-select" data-role="gunner" data-gunner-index="2">
+                <option value="">-- Assign Gunner --</option>
+                {{#each spelljammer.availableCharacters as |char|}}
+                  <option value="{{char.id}}">{{char.name}}</option>
+                {{/each}}
+              </select>
+            </div>
+          {{/if}}
+        </div>
+      </div>
+
+      {{!-- Gunner 4 --}}
+      <div class="gunner-slot">
+        <h3>Gunner 4</h3>
+        <div class="crew-slot">
+          {{#if spelljammer.crew.gunners.[3]}}
+            <div class="assigned-crew">
+              <img src="{{spelljammer.crew.gunners.[3].img}}" alt="{{spelljammer.crew.gunners.[3].name}}" class="crew-portrait" />
+              <div class="crew-details">
+                <span class="crew-name">{{spelljammer.crew.gunners.[3].name}}</span>
+                <span class="crew-stats">
+                  DEX {{sjFormatMod spelljammer.crew.gunners.[3].dex}} | Attack +{{spelljammer.crew.gunners.[3].attackBonus}}
+                </span>
+              </div>
+              <button type="button" class="remove-crew" data-role="gunner" data-gunner-index="3">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          {{else}}
+            <div class="crew-dropzone" data-role="gunner" data-gunner-index="3">
+              <p class="drop-hint"><i class="fas fa-user-plus"></i> Drag character here</p>
+              <select class="crew-select" data-role="gunner" data-gunner-index="3">
+                <option value="">-- Assign Gunner --</option>
+                {{#each spelljammer.availableCharacters as |char|}}
+                  <option value="{{char.id}}">{{char.name}}</option>
+                {{/each}}
+              </select>
+            </div>
+          {{/if}}
+        </div>
+      </div>
     {{/if}}
   </div>
 
