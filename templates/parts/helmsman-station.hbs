@@ -33,24 +33,47 @@
     {{/if}}
   </div>
 
-  {{!-- Current Velocity Display --}}
-  <div class="velocity-display">
-    <div class="velocity-current">
-      <span class="velocity-value">{{spelljammer.velocity.current}}</span>
-      <span class="velocity-unit">ft/round</span>
+  {{!-- Velocity & Movement Controls - Reorganized --}}
+  <div class="velocity-control-panel">
+    <div class="velocity-row">
+      {{!-- Current Speed (Editable) --}}
+      <div class="velocity-speed-box">
+        <label>Current Speed</label>
+        <div class="speed-input-wrapper">
+          <input type="number" class="velocity-input" value="{{spelljammer.velocity.current}}" min="0" step="100" />
+          <span class="speed-unit">ft/round</span>
+        </div>
+      </div>
+
+      {{!-- Direction Toggle Buttons --}}
+      <div class="velocity-direction-box">
+        <label>Direction</label>
+        <div class="direction-buttons">
+          {{#each directions as |dir|}}
+            <button type="button" class="direction-btn {{#if (sjEq dir ../spelljammer.velocity.direction)}}active{{/if}}" data-direction="{{dir}}">
+              {{dir}}
+            </button>
+          {{/each}}
+        </div>
+      </div>
     </div>
-    <div class="velocity-direction">
-      <span class="direction-arrow" data-direction="{{spelljammer.velocity.direction}}">
-        {{#if (sjEq spelljammer.velocity.direction "N")}}<i class="fas fa-arrow-up"></i>{{/if}}
-        {{#if (sjEq spelljammer.velocity.direction "NE")}}<i class="fas fa-arrow-up" style="transform: rotate(45deg)"></i>{{/if}}
-        {{#if (sjEq spelljammer.velocity.direction "E")}}<i class="fas fa-arrow-right"></i>{{/if}}
-        {{#if (sjEq spelljammer.velocity.direction "SE")}}<i class="fas fa-arrow-down" style="transform: rotate(-45deg)"></i>{{/if}}
-        {{#if (sjEq spelljammer.velocity.direction "S")}}<i class="fas fa-arrow-down"></i>{{/if}}
-        {{#if (sjEq spelljammer.velocity.direction "SW")}}<i class="fas fa-arrow-down" style="transform: rotate(45deg)"></i>{{/if}}
-        {{#if (sjEq spelljammer.velocity.direction "W")}}<i class="fas fa-arrow-left"></i>{{/if}}
-        {{#if (sjEq spelljammer.velocity.direction "NW")}}<i class="fas fa-arrow-up" style="transform: rotate(-45deg)"></i>{{/if}}
-      </span>
-      <span class="direction-label">{{spelljammer.velocity.direction}}</span>
+
+    {{!-- Max Accel/Decel (Editable) --}}
+    <div class="velocity-limits-row">
+      <div class="limit-input-box">
+        <label>Max Acceleration</label>
+        <div class="limit-input-wrapper">
+          <input type="number" class="max-accel-input" value="{{spelljammer.velocity.maxAcceleration}}" min="0" step="50" />
+          <span class="limit-unit">ft</span>
+        </div>
+      </div>
+      <div class="limit-input-box">
+        <label>Max Deceleration</label>
+        <div class="limit-input-wrapper">
+          <input type="number" class="max-decel-input" value="{{spelljammer.velocity.maxDeceleration}}" min="0" step="50" />
+          <span class="limit-unit">ft</span>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -82,8 +105,6 @@
   </div>
 
   <div class="station-info">
-    <p><strong>Max Acceleration:</strong> {{spelljammer.velocity.maxAcceleration}} ft</p>
-    <p><strong>Max Deceleration:</strong> {{spelljammer.velocity.maxDeceleration}} ft</p>
-    <p><strong>Overdrive/Brake DC:</strong> Based on speed (0-100ft: DC 0, 200-300ft: DC 5, etc.)</p>
+    <p><strong>Overdrive/Brake DC:</strong> 0-100ft: DC 0 | 200-300ft: DC 5 | 400-500ft: DC 10 | 600-700ft: DC 15 | 800+ft: DC 20</p>
   </div>
 </div>

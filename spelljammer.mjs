@@ -439,6 +439,7 @@ Hooks.once("init", () => {
     MODULE_ID,
     createOceanCourtExpress,
     createMosquito,
+    populateCompendium,
     getDefaultSpelljammerData,
     rolls: SpelljammerRolls
   };
@@ -458,9 +459,73 @@ Hooks.once("ready", async () => {
 
   // Welcome message for GMs
   if (game.user.isGM) {
-    console.log(`${MODULE_ID} | Spelljammer Ship Combat module loaded. Use game.spelljammer.createOceanCourtExpress() or game.spelljammer.createMosquito() to create ships.`);
+    console.log(`${MODULE_ID} | Spelljammer Ship Combat module loaded.`);
+    console.log(`${MODULE_ID} | Commands: game.spelljammer.createOceanCourtExpress() | game.spelljammer.createMosquito() | game.spelljammer.populateCompendium()`);
+
+    // Check if compendium needs population
+    await checkAndPopulateCompendium();
   }
 });
+
+/**
+ * Check and populate the ships compendium if empty
+ */
+async function checkAndPopulateCompendium() {
+  const packId = `${MODULE_ID}.spelljammer-ships`;
+  const pack = game.packs.get(packId);
+
+  if (!pack) {
+    console.log(`${MODULE_ID} | Ships compendium not found, creating ships in world instead.`);
+    return;
+  }
+
+  // Check if pack has any entries
+  const index = await pack.getIndex();
+  if (index.size === 0) {
+    console.log(`${MODULE_ID} | Ships compendium is empty. Run game.spelljammer.populateCompendium() to add ships.`);
+
+    // Show notification to GM
+    ui.notifications.info("Spelljammer Ships: Run game.spelljammer.populateCompendium() in console to add ships to compendium, or use game.spelljammer.createOceanCourtExpress() to create directly.");
+  }
+}
+
+/**
+ * Populate the compendium with default ships
+ */
+async function populateCompendium() {
+  if (!game.user.isGM) {
+    ui.notifications.error("Only GMs can populate the compendium.");
+    return;
+  }
+
+  const packId = `${MODULE_ID}.spelljammer-ships`;
+  let pack = game.packs.get(packId);
+
+  // Create ships in world first, then import to compendium
+  ui.notifications.info("Creating ships for compendium...");
+
+  // Create Ocean Court Express
+  const oce = await createOceanCourtExpress({ name: "Ocean Court Express" });
+
+  // Create Mosquito
+  const mosquito = await createMosquito({ name: "Mosquito Fighter" });
+
+  if (pack) {
+    // Try to import to compendium
+    try {
+      await pack.importDocument(oce);
+      await pack.importDocument(mosquito);
+      ui.notifications.info("Ships added to compendium! You can now delete the world copies if desired.");
+    } catch (e) {
+      console.error(`${MODULE_ID} | Error importing to compendium:`, e);
+      ui.notifications.warn("Couldn't add to compendium, but ships are available in your world.");
+    }
+  } else {
+    ui.notifications.info("Ships created in your world! Drag them to a compendium to save.");
+  }
+
+  return { oceanCourtExpress: oce, mosquito };
+}
 
 /**
  * Hook into token rendering to add velocity overlay

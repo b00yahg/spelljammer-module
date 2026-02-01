@@ -36,40 +36,83 @@
   {{!-- Power Charge Display --}}
   {{#if spelljammer.crew.boatswain}}
     <div class="power-charges-display">
-      <h3>Power Charges Available</h3>
-      <div class="charge-icons">
-        {{#sjTimes spelljammer.crew.boatswain.prof}}
-          <span class="charge-icon"><i class="fas fa-bolt"></i></span>
-        {{/sjTimes}}
+      <h3>Power Charges This Turn</h3>
+      <div class="charge-visual">
+        {{!-- Show total charges with used/available visual --}}
+        <div class="charge-icons">
+          {{#sjTimes spelljammer.power.total}}
+            {{#if (sjLt index ../spelljammer.power.used)}}
+              <span class="charge-icon used" title="Used"><i class="fas fa-bolt"></i></span>
+            {{else}}
+              <span class="charge-icon available" title="Available"><i class="fas fa-bolt"></i></span>
+            {{/if}}
+          {{/sjTimes}}
+        </div>
+        <p class="charge-count">
+          <span class="available-count">{{spelljammer.power.available}}</span> / {{spelljammer.power.total}} available
+          {{#if spelljammer.power.bonusFromOrder}}
+            <span class="bonus-indicator">(+1 from Captain's Order)</span>
+          {{/if}}
+        </p>
       </div>
-      <p class="charge-count">{{spelljammer.crew.boatswain.prof}} charges per turn</p>
+      <button type="button" class="reset-power-charges">
+        <i class="fas fa-redo"></i> New Turn (Reset Charges)
+      </button>
     </div>
   {{/if}}
 
-  {{!-- Quick Module Allocation --}}
+  {{!-- Power Module Quick Allocate --}}
   <div class="station-actions">
     <div class="action-group">
-      <h3>Quick Allocate</h3>
-      <div class="module-quick-buttons">
-        <button type="button" class="allocate-power" data-module-id="weaponsArray"
+      <h3>Allocate Power (Click to activate)</h3>
+      <div class="module-buttons-grid">
+        <button type="button" class="allocate-power module-btn {{#if spelljammer.powerModules.weaponsArray.active}}active{{/if}}"
+                data-module-id="weaponsArray"
                 {{#unless spelljammer.crew.boatswain}}disabled{{/unless}}
-                title="+1d6 damage to all attacks">
-          <i class="fas fa-crosshairs"></i> Weapons
+                title="+1d6 damage to all weapon attacks until next turn">
+          <i class="fas fa-crosshairs"></i>
+          <span class="module-name">Weapons Array</span>
+          <span class="module-cost">1 charge</span>
         </button>
-        <button type="button" class="allocate-power" data-module-id="deflectorGrid"
+        <button type="button" class="allocate-power module-btn {{#if spelljammer.powerModules.deflectorGrid.active}}active{{/if}}"
+                data-module-id="deflectorGrid"
                 {{#unless spelljammer.crew.boatswain}}disabled{{/unless}}
-                title="Resistance to one damage type">
-          <i class="fas fa-shield-alt"></i> Deflector
+                title="Ship gains resistance to one damage type until next turn">
+          <i class="fas fa-shield-alt"></i>
+          <span class="module-name">Deflector Grid</span>
+          <span class="module-cost">1 charge</span>
         </button>
-        <button type="button" class="allocate-power" data-module-id="thrusterOverride"
+        <button type="button" class="allocate-power module-btn {{#if spelljammer.powerModules.thrusterOverride.active}}active{{/if}}"
+                data-module-id="thrusterOverride"
                 {{#unless spelljammer.crew.boatswain}}disabled{{/unless}}
-                title="+100 ft max acceleration/deceleration">
-          <i class="fas fa-rocket"></i> Thruster
+                title="+100 ft to max acceleration/deceleration this turn">
+          <i class="fas fa-rocket"></i>
+          <span class="module-name">Thruster Override</span>
+          <span class="module-cost">1 charge</span>
         </button>
-        <button type="button" class="allocate-power" data-module-id="hullReinforcement"
+        <button type="button" class="allocate-power module-btn {{#if spelljammer.powerModules.hullReinforcement.active}}active{{/if}}"
+                data-module-id="hullReinforcement"
                 {{#unless spelljammer.crew.boatswain}}disabled{{/unless}}
-                title="Gain 2d8 temp HP">
-          <i class="fas fa-hard-hat"></i> Hull
+                title="Ship gains 2d8 temporary HP">
+          <i class="fas fa-hard-hat"></i>
+          <span class="module-name">Hull Reinforcement</span>
+          <span class="module-cost">1 charge</span>
+        </button>
+        <button type="button" class="allocate-power module-btn {{#if spelljammer.powerModules.systemRestoration.active}}active{{/if}}"
+                data-module-id="systemRestoration"
+                {{#unless spelljammer.crew.boatswain}}disabled{{/unless}}
+                title="Restore a disabled system to 1 HP">
+          <i class="fas fa-wrench"></i>
+          <span class="module-name">System Restoration</span>
+          <span class="module-cost">1 charge</span>
+        </button>
+        <button type="button" class="allocate-power module-btn {{#if spelljammer.powerModules.warpCoreCharge.active}}active{{/if}}"
+                data-module-id="warpCoreCharge"
+                {{#unless spelljammer.crew.boatswain}}disabled{{/unless}}
+                title="After 3 consecutive turns, can warp jump to escape">
+          <i class="fas fa-atom"></i>
+          <span class="module-name">Warp Core Charge</span>
+          <span class="module-cost">2 charges</span>
         </button>
       </div>
     </div>
@@ -78,18 +121,33 @@
       <h3>Special Actions</h3>
       <button type="button" class="boatswain-action" data-action="arcaneOverclock"
               {{#unless spelljammer.crew.boatswain}}disabled{{/unless}}>
-        <i class="fas fa-magic"></i> Arcane Overclock (Spell Slot)
-      </button>
-      <button type="button" class="boatswain-action" data-action="emergencyHotfix"
-              {{#unless spelljammer.crew.boatswain}}disabled{{/unless}}>
-        <i class="fas fa-wrench"></i> Emergency Hotfix (Reaction)
+        <i class="fas fa-magic"></i> Arcane Overclock (Spell Slot = Extra Charges)
       </button>
     </div>
   </div>
 
-  <div class="station-info">
-    <p><strong>Power Charges:</strong> Equal to Proficiency Bonus per turn</p>
-    <p><strong>Arcane Overclock:</strong> Spend spell slot for extra charges = slot level</p>
-    <p><strong>Emergency Hotfix:</strong> Reallocate 1 charge when ship &lt; 50% HP</p>
+  {{!-- Active Modules Summary --}}
+  <div class="active-modules-summary">
+    <h4>Active Effects:</h4>
+    <ul class="active-effects-list">
+      {{#if spelljammer.powerModules.weaponsArray.active}}
+        <li class="active-effect"><i class="fas fa-crosshairs"></i> Weapons Array: +1d6 damage</li>
+      {{/if}}
+      {{#if spelljammer.powerModules.deflectorGrid.active}}
+        <li class="active-effect"><i class="fas fa-shield-alt"></i> Deflector Grid: Resistance active</li>
+      {{/if}}
+      {{#if spelljammer.powerModules.thrusterOverride.active}}
+        <li class="active-effect"><i class="fas fa-rocket"></i> Thruster Override: +100 ft accel/decel</li>
+      {{/if}}
+      {{#if spelljammer.powerModules.hullReinforcement.active}}
+        <li class="active-effect"><i class="fas fa-hard-hat"></i> Hull Reinforcement: Temp HP active</li>
+      {{/if}}
+      {{#if spelljammer.powerModules.warpCoreCharge.active}}
+        <li class="active-effect"><i class="fas fa-atom"></i> Warp Core: Charging...</li>
+      {{/if}}
+    </ul>
+    {{#unless (sjGt spelljammer.power.used 0)}}
+      <p class="no-effects">No modules currently powered.</p>
+    {{/unless}}
   </div>
 </div>

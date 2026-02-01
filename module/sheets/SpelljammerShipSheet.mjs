@@ -53,6 +53,13 @@ export class SpelljammerShipSheet extends ActorSheet {
     // Prepare power module display data
     const preparedModules = this._preparePowerModules(sjData.powerModules, resolvedCrew.boatswain);
 
+    // Calculate power charges
+    const boatswainProf = resolvedCrew.boatswain?.prof ?? 0;
+    const bonusCharge = sjData.combat?.activeOrder === "engineering" ? 1 : 0;
+    const totalCharges = boatswainProf + bonusCharge;
+    const usedCharges = sjData.powerCharges?.used ?? 0;
+    const availableCharges = Math.max(0, totalCharges - usedCharges);
+
     // Y2K theme setting
     const y2kTheme = game.settings.get(MODULE_ID, "y2kTheme");
 
@@ -63,7 +70,13 @@ export class SpelljammerShipSheet extends ActorSheet {
       availableCharacters,
       weapons: preparedWeapons,
       modules: preparedModules,
-      isSinglePilot: sjData.singlePilot || false
+      isSinglePilot: sjData.singlePilot || false,
+      power: {
+        total: totalCharges,
+        used: usedCharges,
+        available: availableCharges,
+        bonusFromOrder: bonusCharge > 0
+      }
     };
 
     context.y2kTheme = y2kTheme;
@@ -109,6 +122,10 @@ export class SpelljammerShipSheet extends ActorSheet {
           systemRestoration: { active: false, hp: 10, maxHp: 10 },
           warpCoreCharge: { active: false, hp: 10, maxHp: 10, chargeProgress: 0 }
         },
+        powerCharges: {
+          used: 0,
+          bonusFromOrder: false
+        },
         weapons: [],
         combat: {
           overdriveDisabled: false,
@@ -141,6 +158,7 @@ export class SpelljammerShipSheet extends ActorSheet {
       crewRequirements: this.actor.getFlag(MODULE_ID, "crewRequirements") ?? { minimum: 5, maximum: 15 },
       airSupply: this.actor.getFlag(MODULE_ID, "airSupply") ?? { current: 30, max: 30 },
       powerModules: this.actor.getFlag(MODULE_ID, "powerModules") ?? {},
+      powerCharges: this.actor.getFlag(MODULE_ID, "powerCharges") ?? { used: 0, bonusFromOrder: false },
       weapons: this.actor.getFlag(MODULE_ID, "weapons") ?? [],
       combat: this.actor.getFlag(MODULE_ID, "combat") ?? {},
       singlePilot: this.actor.getFlag(MODULE_ID, "singlePilot") ?? false
@@ -469,12 +487,19 @@ export class SpelljammerShipSheet extends ActorSheet {
     html.find(".toggle-module").on("click", this._onToggleModule.bind(this));
     html.find(".allocate-power").on("click", this._onAllocatePower.bind(this));
 
-    // Velocity controls
+    // Velocity controls - editable inputs
     html.find(".velocity-adjust").on("click", this._onVelocityAdjust.bind(this));
     html.find(".direction-select").on("change", this._onDirectionChange.bind(this));
+    html.find(".velocity-input").on("change", this._onVelocityInput.bind(this));
+    html.find(".direction-btn").on("click", this._onDirectionClick.bind(this));
+    html.find(".max-accel-input").on("change", this._onMaxAccelChange.bind(this));
+    html.find(".max-decel-input").on("change", this._onMaxDecelChange.bind(this));
 
     // Weapon gunner assignment
     html.find(".weapon-gunner-select").on("change", this._onWeaponGunnerSelect.bind(this));
+
+    // Reset power charges (new turn)
+    html.find(".reset-power-charges").on("click", this._onResetPowerCharges.bind(this));
   }
 
   /** @override */
@@ -699,29 +724,6 @@ export class SpelljammerShipSheet extends ActorSheet {
   }
 
   /**
-   * Toggle a power module on/off
-   */
-  async _onToggleModule(event) {
-    event.preventDefault();
-    const button = event.currentTarget;
-    const moduleId = button.dataset.moduleId;
-
-    const modules = foundry.utils.deepClone(this.actor.getFlag(MODULE_ID, "powerModules") || {});
-
-    if (!modules[moduleId]) return;
-    if (modules[moduleId].hp <= 0) {
-      ui.notifications.warn("This module is disabled!");
-      return;
-    }
-
-    modules[moduleId].active = !modules[moduleId].active;
-    await this.actor.setFlag(MODULE_ID, "powerModules", modules);
-
-    const status = modules[moduleId].active ? "activated" : "deactivated";
-    ui.notifications.info(`${moduleId} ${status}`);
-  }
-
-  /**
    * Allocate power to a module
    */
   async _onAllocatePower(event) {
@@ -738,7 +740,13 @@ export class SpelljammerShipSheet extends ActorSheet {
       return;
     }
 
+    const boatswain = game.actors.get(boatswainId);
+    const boatswainProf = boatswain?.system.attributes.prof ?? 2;
+    const bonusCharge = sjData.combat?.activeOrder === "engineering" ? 1 : 0;
+    const totalCharges = boatswainProf + bonusCharge;
+
     const modules = foundry.utils.deepClone(this.actor.getFlag(MODULE_ID, "powerModules") || {});
+    const powerCharges = foundry.utils.deepClone(this.actor.getFlag(MODULE_ID, "powerCharges") || { used: 0 });
 
     if (!modules[moduleId]) return;
     if (modules[moduleId].hp <= 0) {
@@ -746,22 +754,51 @@ export class SpelljammerShipSheet extends ActorSheet {
       return;
     }
 
-    modules[moduleId].active = true;
-    await this.actor.setFlag(MODULE_ID, "powerModules", modules);
-
-    // Handle special module effects
-    const moduleNames = {
-      weaponsArray: "Weapons Array - +1d6 damage to all weapon attacks!",
-      deflectorGrid: "Deflector Grid - Ship gains resistance to one damage type!",
-      thrusterOverride: "Thruster Override - +100 ft to max acceleration/deceleration!",
-      hullReinforcement: "Hull Reinforcement - Gaining 2d8 temporary HP!",
-      systemRestoration: "System Restoration - Restore a disabled system to 1 HP!",
-      warpCoreCharge: "Warp Core Charge - Charging warp core..."
+    // Module cost definitions
+    const moduleCosts = {
+      weaponsArray: 1,
+      deflectorGrid: 1,
+      thrusterOverride: 1,
+      hullReinforcement: 1,
+      systemRestoration: 1,
+      warpCoreCharge: 2
     };
 
+    const cost = moduleCosts[moduleId] || 1;
+    const availableCharges = totalCharges - powerCharges.used;
+
+    // Check if we have enough charges
+    if (availableCharges < cost) {
+      ui.notifications.warn(`Not enough power charges! Need ${cost}, have ${availableCharges}.`);
+      return;
+    }
+
+    // Activate module and consume charges
+    modules[moduleId].active = true;
+    powerCharges.used += cost;
+
+    await this.actor.setFlag(MODULE_ID, "powerModules", modules);
+    await this.actor.setFlag(MODULE_ID, "powerCharges", powerCharges);
+
+    // Handle special module effects
+    const moduleInfo = {
+      weaponsArray: { name: "Weapons Array", effect: "+1d6 damage to all weapon attacks until next turn" },
+      deflectorGrid: { name: "Deflector Grid", effect: "Ship gains resistance to one damage type until next turn" },
+      thrusterOverride: { name: "Thruster Override", effect: "+100 ft to max acceleration/deceleration this turn" },
+      hullReinforcement: { name: "Hull Reinforcement", effect: "Ship gains 2d8 temporary HP" },
+      systemRestoration: { name: "System Restoration", effect: "Restore a disabled system to 1 HP" },
+      warpCoreCharge: { name: "Warp Core Charge", effect: "Charging warp core... (3 consecutive turns to jump)" }
+    };
+
+    const info = moduleInfo[moduleId];
     ChatMessage.create({
       speaker: ChatMessage.getSpeaker({ actor: this.actor }),
-      content: `<div class="spelljammer-chat"><strong>Power Allocated:</strong> ${moduleNames[moduleId]}</div>`
+      content: `<div class="spelljammer-chat">
+        <h3><i class="fas fa-bolt"></i> Power Allocated</h3>
+        <p><strong>${info.name}</strong> (${cost} charge${cost > 1 ? "s" : ""})</p>
+        <p>${info.effect}</p>
+        <p class="power-status">Charges: ${powerCharges.used}/${totalCharges} used</p>
+      </div>`
     });
 
     // Roll for Hull Reinforcement
@@ -772,6 +809,57 @@ export class SpelljammerShipSheet extends ActorSheet {
         flavor: "Hull Reinforcement - Temporary HP"
       });
     }
+  }
+
+  /**
+   * Deactivate a power module and refund charge
+   */
+  async _onToggleModule(event) {
+    event.preventDefault();
+    const button = event.currentTarget;
+    const moduleId = button.dataset.moduleId;
+
+    const modules = foundry.utils.deepClone(this.actor.getFlag(MODULE_ID, "powerModules") || {});
+    const powerCharges = foundry.utils.deepClone(this.actor.getFlag(MODULE_ID, "powerCharges") || { used: 0 });
+
+    if (!modules[moduleId]) return;
+
+    const moduleCosts = {
+      weaponsArray: 1, deflectorGrid: 1, thrusterOverride: 1,
+      hullReinforcement: 1, systemRestoration: 1, warpCoreCharge: 2
+    };
+
+    if (modules[moduleId].active) {
+      // Deactivating - refund the charge
+      modules[moduleId].active = false;
+      powerCharges.used = Math.max(0, powerCharges.used - (moduleCosts[moduleId] || 1));
+      ui.notifications.info(`${moduleId} deactivated, charge refunded.`);
+    } else {
+      // Can't activate via toggle - must use allocate
+      ui.notifications.info("Use 'Allocate Power' to activate modules.");
+      return;
+    }
+
+    await this.actor.setFlag(MODULE_ID, "powerModules", modules);
+    await this.actor.setFlag(MODULE_ID, "powerCharges", powerCharges);
+  }
+
+  /**
+   * Reset power charges for new turn
+   */
+  async _onResetPowerCharges(event) {
+    event.preventDefault();
+
+    // Deactivate all modules and reset charges
+    const modules = foundry.utils.deepClone(this.actor.getFlag(MODULE_ID, "powerModules") || {});
+    for (const key of Object.keys(modules)) {
+      modules[key].active = false;
+    }
+
+    await this.actor.setFlag(MODULE_ID, "powerModules", modules);
+    await this.actor.setFlag(MODULE_ID, "powerCharges", { used: 0, bonusFromOrder: false });
+
+    ui.notifications.info("Power charges reset for new turn!");
   }
 
   /**
@@ -839,6 +927,71 @@ export class SpelljammerShipSheet extends ActorSheet {
     if (weapon) {
       weapon.assignedGunner = gunnerIndex;
       await this.actor.setFlag(MODULE_ID, "weapons", weapons);
+      ui.notifications.info(`Gunner ${gunnerIndex !== null ? gunnerIndex + 1 : "unassigned"} for ${weapon.name}`);
     }
+  }
+
+  /**
+   * Direct velocity input
+   */
+  async _onVelocityInput(event) {
+    event.preventDefault();
+    const input = event.currentTarget;
+    const newSpeed = parseInt(input.value) || 0;
+
+    const velocity = foundry.utils.deepClone(this.actor.getFlag(MODULE_ID, "velocity") || {
+      current: 0, direction: "N", maxAcceleration: 200, maxDeceleration: 200
+    });
+
+    velocity.current = Math.max(0, newSpeed);
+    await this.actor.setFlag(MODULE_ID, "velocity", velocity);
+  }
+
+  /**
+   * Direction button click
+   */
+  async _onDirectionClick(event) {
+    event.preventDefault();
+    const button = event.currentTarget;
+    const direction = button.dataset.direction;
+
+    const velocity = foundry.utils.deepClone(this.actor.getFlag(MODULE_ID, "velocity") || {
+      current: 0, direction: "N", maxAcceleration: 200, maxDeceleration: 200
+    });
+
+    velocity.direction = direction;
+    await this.actor.setFlag(MODULE_ID, "velocity", velocity);
+  }
+
+  /**
+   * Max acceleration change
+   */
+  async _onMaxAccelChange(event) {
+    event.preventDefault();
+    const input = event.currentTarget;
+    const newMax = parseInt(input.value) || 200;
+
+    const velocity = foundry.utils.deepClone(this.actor.getFlag(MODULE_ID, "velocity") || {
+      current: 0, direction: "N", maxAcceleration: 200, maxDeceleration: 200
+    });
+
+    velocity.maxAcceleration = Math.max(0, newMax);
+    await this.actor.setFlag(MODULE_ID, "velocity", velocity);
+  }
+
+  /**
+   * Max deceleration change
+   */
+  async _onMaxDecelChange(event) {
+    event.preventDefault();
+    const input = event.currentTarget;
+    const newMax = parseInt(input.value) || 200;
+
+    const velocity = foundry.utils.deepClone(this.actor.getFlag(MODULE_ID, "velocity") || {
+      current: 0, direction: "N", maxAcceleration: 200, maxDeceleration: 200
+    });
+
+    velocity.maxDeceleration = Math.max(0, newMax);
+    await this.actor.setFlag(MODULE_ID, "velocity", velocity);
   }
 }

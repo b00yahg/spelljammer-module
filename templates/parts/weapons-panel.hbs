@@ -1,23 +1,23 @@
 {{!-- Weapons Panel --}}
 <div class="weapons-panel">
-  <h2>Ship Weapons</h2>
+  <h2><i class="fas fa-crosshairs"></i> Ship Weapons</h2>
 
   {{#if spelljammer.weapons.length}}
     <div class="weapons-list">
       {{#each spelljammer.weapons as |weapon|}}
-        <div class="weapon-card {{#unless weapon.canFire}}disabled{{/unless}}">
+        <div class="weapon-card {{#unless weapon.canFire}}disabled{{/unless}} {{#if (sjLte weapon.hp 0)}}destroyed{{/if}}">
           <div class="weapon-header">
             <h3>{{weapon.name}}</h3>
             <div class="weapon-hp">
               <span class="hp-bar" style="width: {{sjDiv (sjMul weapon.hp 100) weapon.maxHp}}%"></span>
-              <span class="hp-text">{{weapon.hp}}/{{weapon.maxHp}}</span>
+              <span class="hp-text">{{weapon.hp}}/{{weapon.maxHp}} HP</span>
             </div>
           </div>
 
           <div class="weapon-stats">
             <div class="stat">
               <span class="stat-label">Damage</span>
-              <span class="stat-value">{{weapon.damage}} {{weapon.damageType}}</span>
+              <span class="stat-value damage-value">{{weapon.damage}} {{weapon.damageType}}</span>
             </div>
             <div class="stat">
               <span class="stat-label">Range</span>
@@ -29,7 +29,7 @@
             </div>
             <div class="stat">
               <span class="stat-label">Firing Arc</span>
-              <span class="stat-value">{{weapon.firingArc}}°</span>
+              <span class="stat-value">{{weapon.firingArc}}</span>
             </div>
           </div>
 
@@ -41,37 +41,58 @@
             </div>
           {{/if}}
 
-          <div class="weapon-gunner">
-            <label>Assigned Gunner:</label>
+          {{!-- Gunner Assignment --}}
+          <div class="weapon-gunner-assignment">
+            <label><i class="fas fa-user"></i> Assigned Gunner:</label>
             <select class="weapon-gunner-select" data-weapon-id="{{weapon.id}}">
-              <option value="">-- None --</option>
-              {{#sjTimes 4}}
-                {{#with (sjIndex ../../spelljammer.crew.gunners index)}}
-                  <option value="{{../index}}" {{#if (sjEq ../../weapon.assignedGunner ../index)}}selected{{/if}}>
-                    Gunner {{sjAdd ../index 1}}: {{this.name}}
-                  </option>
-                {{else}}
-                  <option value="{{index}}" disabled>Gunner {{sjAdd index 1}}: (Empty)</option>
-                {{/with}}
-              {{/sjTimes}}
+              <option value="">-- Select Gunner --</option>
+              {{#if (sjIndex ../../spelljammer.crew.gunners 0)}}
+                <option value="0" {{#if (sjEq weapon.assignedGunner 0)}}selected{{/if}}>
+                  Gunner 1: {{(sjIndex ../../spelljammer.crew.gunners 0).name}}
+                </option>
+              {{/if}}
+              {{#if (sjIndex ../../spelljammer.crew.gunners 1)}}
+                <option value="1" {{#if (sjEq weapon.assignedGunner 1)}}selected{{/if}}>
+                  Gunner 2: {{(sjIndex ../../spelljammer.crew.gunners 1).name}}
+                </option>
+              {{/if}}
+              {{#if (sjIndex ../../spelljammer.crew.gunners 2)}}
+                <option value="2" {{#if (sjEq weapon.assignedGunner 2)}}selected{{/if}}>
+                  Gunner 3: {{(sjIndex ../../spelljammer.crew.gunners 2).name}}
+                </option>
+              {{/if}}
+              {{#if (sjIndex ../../spelljammer.crew.gunners 3)}}
+                <option value="3" {{#if (sjEq weapon.assignedGunner 3)}}selected{{/if}}>
+                  Gunner 4: {{(sjIndex ../../spelljammer.crew.gunners 3).name}}
+                </option>
+              {{/if}}
             </select>
           </div>
 
+          {{!-- Attack Info --}}
           {{#if weapon.gunner}}
             <div class="weapon-attack-info">
-              <span class="attack-bonus">Attack: +{{weapon.attackBonus}}</span>
-              <span class="damage-bonus">Damage: +{{weapon.damageBonus}}</span>
+              <span class="attack-bonus"><i class="fas fa-dice-d20"></i> Attack: +{{weapon.attackBonus}}</span>
+              <span class="damage-bonus"><i class="fas fa-burst"></i> Damage: +{{weapon.damageBonus}}</span>
+              {{#if ../../spelljammer.powerModules.weaponsArray.active}}
+                <span class="weapons-array-bonus"><i class="fas fa-bolt"></i> +1d6 (Weapons Array)</span>
+              {{/if}}
+            </div>
+          {{else}}
+            <div class="weapon-attack-info no-gunner">
+              <span class="warning"><i class="fas fa-exclamation-triangle"></i> No gunner assigned</span>
             </div>
           {{/if}}
 
+          {{!-- Attack/Damage Buttons --}}
           <div class="weapon-actions">
             <button type="button" class="roll-weapon-attack" data-weapon-id="{{weapon.id}}"
                     {{#unless weapon.canFire}}disabled{{/unless}}>
-              <i class="fas fa-dice-d20"></i> Attack
+              <i class="fas fa-dice-d20"></i> Attack Roll
             </button>
             <button type="button" class="roll-weapon-damage" data-weapon-id="{{weapon.id}}"
                     {{#unless weapon.canFire}}disabled{{/unless}}>
-              <i class="fas fa-burst"></i> Damage
+              <i class="fas fa-burst"></i> Damage Roll
             </button>
           </div>
         </div>
@@ -80,14 +101,14 @@
   {{else}}
     <div class="no-weapons">
       <p><i class="fas fa-exclamation-triangle"></i> No weapons installed on this ship.</p>
-      <p class="hint">Weapons can be added via the ship's creation function or by editing the actor's flags.</p>
+      <p class="hint">Create a ship using <code>game.spelljammer.createOceanCourtExpress()</code> to get a ship with weapons.</p>
     </div>
   {{/if}}
 
   <div class="weapons-info">
     <h3>Weapon Rules</h3>
     <ul>
-      <li><strong>Attack Roll:</strong> d20 + Gunner's DEX + Prof</li>
+      <li><strong>Attack Roll:</strong> d20 + Gunner's DEX mod + Proficiency Bonus</li>
       <li><strong>Damage Roll:</strong> Weapon dice + Gunner's DEX modifier</li>
       <li><strong>Weapons Array:</strong> When active, adds +1d6 to all weapon damage</li>
       <li><strong>Firing Arc:</strong> Weapons can only target within their arc (45° or 90°)</li>
