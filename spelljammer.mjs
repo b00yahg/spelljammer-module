@@ -418,7 +418,7 @@ function setupSocketHandlers() {
 /**
  * Module initialization
  */
-Hooks.once("init", () => {
+Hooks.once("init", async () => {
   console.log(`${MODULE_ID} | Initializing Spelljammer Ship Combat module`);
 
   // Register settings
@@ -426,6 +426,10 @@ Hooks.once("init", () => {
 
   // Register Handlebars helpers
   registerHandlebarsHelpers();
+
+  // Preload templates BEFORE registering the sheet
+  await preloadTemplates();
+  console.log(`${MODULE_ID} | Templates preloaded`);
 
   // Register the ship sheet
   Actors.registerSheet(MODULE_ID, SpelljammerShipSheet, {
@@ -450,9 +454,6 @@ Hooks.once("init", () => {
  */
 Hooks.once("ready", async () => {
   console.log(`${MODULE_ID} | Module ready`);
-
-  // Preload templates
-  await preloadTemplates();
 
   // Setup socket handlers
   setupSocketHandlers();

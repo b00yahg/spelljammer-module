@@ -26,6 +26,25 @@ export class SpelljammerShipSheet extends ActorSheet {
     return `modules/${MODULE_ID}/templates/spelljammer-sheet.hbs`;
   }
 
+  /** @override */
+  async _render(force = false, options = {}) {
+    try {
+      await super._render(force, options);
+    } catch (error) {
+      console.error(`${MODULE_ID} | Error rendering sheet:`, error);
+      ui.notifications?.error("Error rendering Spelljammer sheet. Check console for details.");
+
+      // Try to render with minimal template as fallback
+      const html = `<div class="spelljammer-sheet" style="padding: 20px;">
+        <h1>${this.actor?.name || "Ship"}</h1>
+        <p style="color: red;">Error loading sheet. Please check the browser console (F12) for details.</p>
+        <p>Try refreshing the page. If the issue persists, try removing the sheet type and re-assigning it.</p>
+        <button onclick="this.closest('.app').querySelector('.close').click()">Close</button>
+      </div>`;
+      this.element.html(html);
+    }
+  }
+
   // ==========================================================================
   // DATA PREPARATION
   // ==========================================================================
@@ -92,16 +111,25 @@ export class SpelljammerShipSheet extends ActorSheet {
 
     } catch (error) {
       console.error(`${MODULE_ID} | Error in getData:`, error);
-      // Provide minimal context to prevent blank sheet
+      console.error(`${MODULE_ID} | Stack trace:`, error.stack);
+
+      // Provide complete fallback context to prevent blank sheet
       context.spelljammer = {
+        initialized: false,
         shipClass: "Unknown",
         velocity: { current: 0, direction: "N", maxAcceleration: 200, maxDeceleration: 200 },
         crew: { captain: null, helmsman: null, gunners: [], boatswain: null },
+        crewAssignments: { captain: null, helmsman: null, gunners: [], boatswain: null },
+        crewRequirements: { minimum: 1, maximum: 10 },
+        airSupply: { current: 30, max: 30 },
         availableCharacters: [],
         weapons: [],
         modules: [],
         power: { total: 0, used: 0, available: 0, bonusFromOrder: false },
-        powerModules: {}
+        powerCharges: { used: 0, bonusFromOrder: false },
+        powerModules: {},
+        combat: { activeOrder: null, captainOrderUsed: false },
+        isSinglePilot: false
       };
       context.y2kTheme = true;
       context.isGM = game.user?.isGM ?? false;
